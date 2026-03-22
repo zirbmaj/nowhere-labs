@@ -223,6 +223,7 @@ function switchPhase() {
         isFocus = false;
         timeRemaining = currentSession ? currentSession.timer.break * 60 : BREAK;
         document.getElementById('timer-phase').textContent = 'breathe';
+        document.body.classList.add('phase-break');
         // Conductor: swap to break mix
         if (currentSession && currentSession.break_mix) {
             applyMix(currentSession.break_mix);
@@ -231,6 +232,7 @@ function switchPhase() {
         isFocus = true;
         timeRemaining = currentSession ? currentSession.timer.focus * 60 : FOCUS;
         document.getElementById('timer-phase').textContent = 'focus';
+        document.body.classList.remove('phase-break');
         // Conductor: swap back to focus mix
         if (currentSession && currentSession.focus_mix) {
             applyMix(currentSession.focus_mix);
@@ -304,6 +306,54 @@ document.getElementById('save-session').addEventListener('click', () => {
 });
 
 // ============================================
+// MUSIC PANEL (Static FM embedded)
+// ============================================
+const MOOD_TRACKS = {
+    rain: { title: 'Riders on the Storm', artist: 'The Doors' },
+    storm: { title: 'Gimme Shelter', artist: 'The Rolling Stones' },
+    fog: { title: 'Teardrop', artist: 'Massive Attack' },
+    snow: { title: 'Holocene', artist: 'Bon Iver' },
+    clear: { title: 'Nightswimming', artist: 'R.E.M.' },
+};
+
+let currentMood = 'rain';
+let spotifyEmbedLoaded = false;
+
+async function loadMoodTrack(mood) {
+    currentMood = mood;
+    const track = MOOD_TRACKS[mood];
+
+    // Update UI
+    document.getElementById('radio-mood-label').textContent = mood;
+    document.getElementById('radio-track').textContent = track.title;
+    document.getElementById('radio-artist').textContent = track.artist;
+
+    // Update active button
+    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.mood-btn[data-mood="${mood}"]`)?.classList.add('active');
+
+    // Load Spotify embed via Static FM's API
+    try {
+        const res = await fetch(`https://static-fm.nowherelabs.dev/api/spotify?title=${encodeURIComponent(track.title)}&artist=${encodeURIComponent(track.artist)}`);
+        if (res.ok) {
+            const data = await res.json();
+            if (data.id) {
+                const embedContainer = document.getElementById('radio-embed');
+                embedContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/track/${data.id}?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media" loading="lazy" style="border-radius:8px;"></iframe>`;
+                spotifyEmbedLoaded = true;
+            }
+        }
+    } catch(e) {
+        // Silently fail — music is optional, ambient is the point
+    }
+}
+
+// Wire up mood buttons
+document.querySelectorAll('.mood-btn').forEach(btn => {
+    btn.addEventListener('click', () => loadMoodTrack(btn.dataset.mood));
+});
+
+// ============================================
 // EVENT LISTENERS
 // ============================================
 document.getElementById('timer-toggle').addEventListener('click', toggleTimer);
@@ -360,3 +410,4 @@ if (!loadSessionFromUrl()) {
     loadSession(DEFAULT_SESSIONS[0]); // Start with "deep work"
 }
 renderDots();
+loadMoodTrack('rain'); // Default music mood
