@@ -283,24 +283,59 @@ body {
     align-items: center;
 }
 
-.now-playing-info {
+.radio-mood-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    color: var(--accent);
+    text-transform: uppercase;
     text-align: center;
-    margin-bottom: 24px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.radio-now-playing {
+    text-align: center;
+    margin-bottom: 16px;
 }
 
 .track-title {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 400;
     margin-bottom: 4px;
+    color: var(--text-secondary);
 }
 
 .track-artist {
     font-size: 12px;
     color: var(--accent);
+}
+
+.radio-embed {
+    width: 100%;
+    min-height: 80px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.radio-spacer {
+    flex: 1;
+}
+
+.radio-link {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    text-decoration: none;
+    text-align: center;
+    margin-top: 12px;
+    transition: color 0.2s;
+}
+
+.radio-link:hover {
+    color: var(--text-secondary);
 }
 
 .weather-buttons {

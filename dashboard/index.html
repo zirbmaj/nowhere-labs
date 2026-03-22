@@ -48,10 +48,15 @@
             <!-- Right: Static FM -->
             <section class="panel panel-radio" id="panel-radio">
                 <h2 class="panel-title">MUSIC</h2>
-                <div class="now-playing-info">
-                    <div class="track-title" id="radio-track">pick a vibe</div>
+                <div class="radio-mood-label" id="radio-mood-label">rain</div>
+                <div class="radio-now-playing">
+                    <div class="track-title" id="radio-track">select a mood to start</div>
                     <div class="track-artist" id="radio-artist"></div>
                 </div>
+                <div class="radio-embed" id="radio-embed">
+                    <!-- Spotify embed loads here when mood is selected -->
+                </div>
+                <div class="radio-spacer"></div>
                 <div class="weather-buttons" id="weather-buttons">
                     <button class="mood-btn active" data-mood="rain">rain</button>
                     <button class="mood-btn" data-mood="storm">storm</button>
@@ -59,6 +64,7 @@
                     <button class="mood-btn" data-mood="snow">snow</button>
                     <button class="mood-btn" data-mood="clear">clear</button>
                 </div>
+                <a href="https://static-fm.nowherelabs.dev" target="_blank" class="radio-link">open full radio</a>
             </section>
         </div>
 
