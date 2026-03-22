@@ -478,8 +478,15 @@ body.phase-break {
 .master-controls {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     flex-shrink: 0;
+}
+
+.vol-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
 }
 
 .master-play {
