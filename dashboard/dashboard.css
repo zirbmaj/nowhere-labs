@@ -46,6 +46,17 @@ body {
     text-decoration: none;
 }
 
+.beta-tag {
+    font-size: 7px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    border: 1px solid rgba(122, 138, 106, 0.3);
+    padding: 2px 6px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-left: 6px;
+}
+
 .dash-session-name {
     font-size: 13px;
     color: var(--text-secondary);
