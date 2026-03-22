@@ -214,16 +214,22 @@ body {
     grid-template-columns: 56px 1fr 28px;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
+    padding: 10px 14px;
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(14, 14, 22, 0.7) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
     transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.mix-layer:hover {
+    border-color: rgba(255, 255, 255, 0.04);
 }
 
 .mix-layer.active {
-    border-color: rgba(122, 138, 106, 0.15);
-    background: rgba(14, 14, 22, 0.9);
+    border-color: rgba(122, 138, 106, 0.12);
+    background: linear-gradient(135deg, rgba(14, 14, 22, 0.9) 0%, rgba(18, 18, 28, 0.8) 100%);
+    box-shadow: 0 1px 8px var(--accent-glow);
 }
 
 .mix-label {
