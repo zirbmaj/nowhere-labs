@@ -224,10 +224,16 @@ body.phase-break {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -60%);
+    transform: translate(-50%, -65%);
     font-size: 36px;
     font-weight: 200;
     letter-spacing: 3px;
+    cursor: pointer;
+}
+
+.timer-display:hover {
+    color: var(--accent);
+    transition: color 0.2s;
 }
 
 .timer-phase {

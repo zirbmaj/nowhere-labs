@@ -108,14 +108,20 @@ function createNoise(ctx) {
 // ============================================
 const LAYERS = [
     { id: 'rain', name: 'Rain', src: 'https://drift.nowherelabs.dev/audio/rain.mp3' },
+    { id: 'heavy-rain', name: 'Heavy Rain', src: 'https://drift.nowherelabs.dev/audio/heavy-rain.mp3' },
+    { id: 'thunder', name: 'Thunder', src: 'https://drift.nowherelabs.dev/audio/thunder.mp3' },
     { id: 'fire', name: 'Fire', src: 'https://drift.nowherelabs.dev/audio/fire.mp3' },
     { id: 'cafe', name: 'Cafe', src: 'https://drift.nowherelabs.dev/audio/cafe.mp3' },
     { id: 'birds', name: 'Birds', src: 'https://drift.nowherelabs.dev/audio/birds.mp3' },
     { id: 'waves', name: 'Waves', src: 'https://drift.nowherelabs.dev/audio/waves.mp3' },
+    { id: 'crickets', name: 'Crickets', src: 'https://drift.nowherelabs.dev/audio/crickets.mp3' },
     { id: 'train', name: 'Train', src: 'https://drift.nowherelabs.dev/audio/train.mp3' },
+    { id: 'leaves', name: 'Leaves', src: 'https://drift.nowherelabs.dev/audio/leaves.mp3' },
+    { id: 'vinyl', name: 'Vinyl', type: 'synth' },
     { id: 'wind', name: 'Wind', type: 'synth' },
     { id: 'snow', name: 'Snow', type: 'synth' },
-    { id: 'brown-noise', name: 'Brown', type: 'synth' },
+    { id: 'brown-noise', name: 'Brown Noise', type: 'synth' },
+    { id: 'white-noise', name: 'White Noise', type: 'synth' },
     { id: 'drone', name: 'Drone', type: 'synth' },
 ];
 
@@ -473,6 +479,17 @@ document.querySelectorAll('.mood-btn').forEach(btn => {
 // ============================================
 document.getElementById('timer-toggle').addEventListener('click', toggleTimer);
 
+// Click timer display to set custom duration (only when not running)
+document.getElementById('timer-display').addEventListener('click', () => {
+    if (timerRunning) return;
+    const mins = prompt('Focus duration (minutes):', Math.floor(timeRemaining / 60));
+    if (mins && !isNaN(mins) && parseInt(mins) > 0 && parseInt(mins) <= 180) {
+        timeRemaining = parseInt(mins) * 60;
+        updateTimerDisplay();
+        uiClick();
+    }
+});
+
 document.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
     if (e.key === ' ') {
@@ -561,6 +578,26 @@ function buildSessionPicker() {
         });
         container.appendChild(card);
     });
+
+    // "Start empty" card — build your own session
+    const emptyCard = document.createElement('div');
+    emptyCard.className = 'picker-card';
+    emptyCard.innerHTML = `
+        <div class="picker-card-name">start empty</div>
+        <div class="picker-card-desc">build your own. all sliders at zero.</div>
+    `;
+    emptyCard.addEventListener('click', () => {
+        document.getElementById('session-picker').style.display = 'none';
+        document.getElementById('panels').style.display = '';
+        document.querySelector('.master-bar').style.display = '';
+        // Don't load a session — leave everything at zero
+        loadMoodTrack('rain');
+        if (!audioCtx) initAudio();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        uiClick();
+        if (window.nwlTrack) window.nwlTrack('session_start', { session: 'custom' });
+    });
+    container.appendChild(emptyCard);
 }
 
 // Check if arriving from shared URL
