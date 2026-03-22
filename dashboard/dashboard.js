@@ -269,6 +269,38 @@ document.getElementById('master-vol').addEventListener('input', (e) => {
 document.getElementById('master-play').addEventListener('click', () => {
     if (!audioCtx) initAudio();
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    if (!timerRunning) toggleTimer();
+});
+
+// Session sharing
+function getSessionUrl() {
+    if (!currentSession) return window.location.href;
+    const encoded = btoa(JSON.stringify(currentSession));
+    const url = new URL(window.location);
+    url.searchParams.set('session', encoded);
+    return url.toString();
+}
+
+function loadSessionFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const s = params.get('session');
+    if (!s) return false;
+    try {
+        const session = JSON.parse(atob(s));
+        loadSession(session);
+        return true;
+    } catch { return false; }
+}
+
+document.getElementById('save-session').addEventListener('click', () => {
+    const url = getSessionUrl();
+    navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById('save-session');
+        btn.textContent = 'link copied!';
+        setTimeout(() => btn.textContent = 'save session', 2000);
+    }).catch(() => {
+        prompt('Copy this link:', url);
+    });
 });
 
 // ============================================
@@ -324,5 +356,7 @@ const DEFAULT_SESSIONS = [
 ];
 
 buildMixerPanel();
-loadSession(DEFAULT_SESSIONS[0]); // Start with "deep work"
+if (!loadSessionFromUrl()) {
+    loadSession(DEFAULT_SESSIONS[0]); // Start with "deep work"
+}
 renderDots();
