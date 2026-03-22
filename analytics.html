@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nowhere Labs — Analytics</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #06060a;
+            --bg-card: #0c0c12;
+            --text: #d4d0c8;
+            --text-secondary: #7a7570;
+            --text-dim: #2e2c28;
+            --accent: #8a8070;
+            --green: #7a8a6a;
+            --teal: #6b8f9e;
+            --warm: #8a8070;
+            --border: rgba(255,255,255,0.04);
+        }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+
+        .page { max-width: 1000px; margin: 0 auto; padding: 40px 24px; }
+
+        .header { margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 14px; letter-spacing: 4px; color: var(--text-dim);
+        }
+        .header a { color: var(--text-dim); text-decoration: none; font-size: 12px; }
+        .header a:hover { color: var(--text-secondary); }
+
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 8px; padding: 20px;
+        }
+        .stat-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px; letter-spacing: 3px; color: var(--text-dim);
+            text-transform: uppercase; margin-bottom: 8px;
+        }
+        .stat-value { font-size: 28px; font-weight: 600; }
+        .stat-value.green { color: var(--green); }
+        .stat-value.teal { color: var(--teal); }
+        .stat-value.warm { color: var(--warm); }
+
+        .section { margin-bottom: 32px; }
+        .section-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px; letter-spacing: 4px; color: var(--text-dim);
+            text-transform: uppercase; margin-bottom: 16px;
+            padding-bottom: 8px; border-bottom: 1px solid var(--border);
+        }
+
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px; letter-spacing: 2px; color: var(--text-dim);
+            text-align: left; padding: 8px 0; border-bottom: 1px solid var(--border);
+        }
+        td {
+            font-size: 13px; padding: 10px 0; border-bottom: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        td:last-child { text-align: right; font-family: 'Space Mono', monospace; font-size: 12px; }
+
+        .activity-feed { list-style: none; }
+        .activity-item {
+            padding: 10px 0; border-bottom: 1px solid var(--border);
+            font-size: 12px; color: var(--text-secondary);
+        }
+        .activity-time {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px; color: var(--text-dim); margin-right: 8px;
+        }
+        .activity-project {
+            font-weight: 500; color: var(--text);
+        }
+
+        .loading { color: var(--text-dim); font-style: italic; font-size: 13px; }
+
+        .refresh-btn {
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-dim); font-family: 'Space Mono', monospace;
+            font-size: 10px; padding: 6px 12px; border-radius: 4px;
+            cursor: pointer;
+        }
+        .refresh-btn:hover { border-color: var(--accent); color: var(--text-secondary); }
+
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .two-col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <h1>NOWHERE LABS ANALYTICS</h1>
+            <div>
+                <button class="refresh-btn" onclick="loadAll()">REFRESH</button>
+                <a href="/" style="margin-left: 12px;">back to studio</a>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Events</div>
+                <div class="stat-value" id="total-events">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Drift</div>
+                <div class="stat-value green" id="drift-count">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Static FM</div>
+                <div class="stat-value teal" id="staticfm-count">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Letters</div>
+                <div class="stat-value warm" id="letters-count">-</div>
+            </div>
+        </div>
+
+        <div class="two-col">
+            <div class="section">
+                <h2 class="section-title">Top Events</h2>
+                <table>
+                    <thead><tr><th>EVENT</th><th>COUNT</th></tr></thead>
+                    <tbody id="top-events"><tr><td colspan="2" class="loading">loading...</td></tr></tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Top Drift Layers</h2>
+                <table>
+                    <thead><tr><th>LAYER</th><th>ACTIVATIONS</th></tr></thead>
+                    <tbody id="top-layers"><tr><td colspan="2" class="loading">loading...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">Recent Activity</h2>
+            <ul class="activity-feed" id="activity-feed">
+                <li class="loading">loading...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+    const SB_URL = 'https://lxecuywjwasxijxgnutn.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZWN1eXdqd2FzeGlqeGdudXRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNDM3OTIsImV4cCI6MjA4OTcxOTc5Mn0.Wyq_doDaRZ7EfdpwM2W0_BNtaVI47yN-4cy4yTWl7jo';
+
+    async function query(sql) {
+        // Use PostgREST RPC or direct REST queries
+        const res = await fetch(`${SB_URL}/rest/v1/rpc/`, {
+            method: 'POST',
+            headers: {
+                'apikey': SB_KEY,
+                'Authorization': `Bearer ${SB_KEY}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query: sql }),
+        });
+        return res.json();
+    }
+
+    async function fetchEvents(params) {
+        const url = new URL(`${SB_URL}/rest/v1/analytics_events`);
+        Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+        const res = await fetch(url, {
+            headers: {
+                'apikey': SB_KEY,
+                'Authorization': `Bearer ${SB_KEY}`,
+            },
+        });
+        return res.json();
+    }
+
+    async function loadCounts() {
+        const all = await fetchEvents({ 'select': 'id', 'limit': '0' });
+        // Use HEAD with Prefer: count=exact
+        const countReq = async (filter) => {
+            const url = new URL(`${SB_URL}/rest/v1/analytics_events`);
+            url.searchParams.set('select', 'id');
+            if (filter) url.searchParams.set('project', `eq.${filter}`);
+            const res = await fetch(url, {
+                headers: {
+                    'apikey': SB_KEY,
+                    'Authorization': `Bearer ${SB_KEY}`,
+                    'Prefer': 'count=exact',
+                    'Range': '0-0',
+                },
+            });
+            const range = res.headers.get('content-range');
+            return range ? parseInt(range.split('/')[1]) || 0 : 0;
+        };
+
+        const [total, drift, staticfm, letters] = await Promise.all([
+            countReq(),
+            countReq('drift'),
+            countReq('static-fm'),
+            countReq('letters'),
+        ]);
+
+        document.getElementById('total-events').textContent = total;
+        document.getElementById('drift-count').textContent = drift;
+        document.getElementById('staticfm-count').textContent = staticfm;
+        document.getElementById('letters-count').textContent = letters;
+    }
+
+    async function loadTopEvents() {
+        const events = await fetchEvents({
+            'select': 'event,project',
+            'order': 'created_at.desc',
+            'limit': '500',
+        });
+
+        const counts = {};
+        events.forEach(e => {
+            const key = `${e.project}:${e.event}`;
+            counts[key] = (counts[key] || 0) + 1;
+        });
+
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        const tbody = document.getElementById('top-events');
+        tbody.innerHTML = sorted.map(([name, count]) =>
+            `<tr><td>${name}</td><td>${count}</td></tr>`
+        ).join('') || '<tr><td colspan="2" class="loading">no data yet</td></tr>';
+    }
+
+    async function loadTopLayers() {
+        const events = await fetchEvents({
+            'select': 'data',
+            'event': 'eq.layer_activate',
+            'project': 'eq.drift',
+            'order': 'created_at.desc',
+            'limit': '500',
+        });
+
+        const counts = {};
+        events.forEach(e => {
+            const layer = e.data?.name || e.data?.layer || 'unknown';
+            counts[layer] = (counts[layer] || 0) + 1;
+        });
+
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        const tbody = document.getElementById('top-layers');
+        tbody.innerHTML = sorted.map(([name, count]) =>
+            `<tr><td>${name}</td><td>${count}</td></tr>`
+        ).join('') || '<tr><td colspan="2" class="loading">no layer data yet</td></tr>';
+    }
+
+    async function loadRecentActivity() {
+        const events = await fetchEvents({
+            'select': 'project,event,data,created_at',
+            'order': 'created_at.desc',
+            'limit': '20',
+        });
+
+        const feed = document.getElementById('activity-feed');
+        feed.innerHTML = events.map(e => {
+            const time = new Date(e.created_at);
+            const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            let detail = '';
+            if (e.event === 'pageview') detail = e.data?.path || '';
+            if (e.event === 'layer_activate') detail = e.data?.name || '';
+            if (e.event === 'preset_load') detail = `${e.data?.count || '?'} layers`;
+            if (e.event === 'mix_share') detail = 'shared a mix';
+
+            return `<li class="activity-item">
+                <span class="activity-time">${timeStr}</span>
+                <span class="activity-project">${e.project}</span>
+                ${e.event}${detail ? ' — ' + detail : ''}
+            </li>`;
+        }).join('') || '<li class="loading">no activity yet</li>';
+    }
+
+    async function loadAll() {
+        await Promise.all([loadCounts(), loadTopEvents(), loadTopLayers(), loadRecentActivity()]);
+    }
+
+    loadAll();
+    // Auto-refresh every 30 seconds
+    setInterval(loadAll, 30000);
+    </script>
+</body>
+</html>
