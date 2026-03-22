@@ -386,6 +386,27 @@ document.getElementById('master-vol').addEventListener('input', (e) => {
     });
 });
 
+// Music volume — controls Spotify embed visibility and iframe
+let musicVolume = 0.5;
+document.getElementById('music-vol').addEventListener('input', (e) => {
+    musicVolume = e.target.value / 100;
+    const embed = document.getElementById('radio-embed');
+    if (embed) {
+        const iframe = embed.querySelector('iframe');
+        if (iframe) {
+            iframe.style.opacity = musicVolume > 0 ? 1 : 0;
+            iframe.style.pointerEvents = musicVolume > 0 ? 'auto' : 'none';
+        }
+        // At 0, mute by removing iframe src temporarily
+        if (musicVolume === 0 && iframe) {
+            iframe.dataset.src = iframe.src;
+            iframe.src = '';
+        } else if (musicVolume > 0 && iframe && !iframe.src && iframe.dataset.src) {
+            iframe.src = iframe.dataset.src;
+        }
+    }
+});
+
 document.getElementById('master-play').addEventListener('click', () => {
     if (!audioCtx) initAudio();
     if (audioCtx.state === 'suspended') audioCtx.resume();
