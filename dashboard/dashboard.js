@@ -10,6 +10,76 @@ let masterGain = null;
 let masterVolume = 0.7;
 let layerStates = {};
 
+// ============================================
+// UI SOUNDS — feel, don't hear
+// ============================================
+function uiTick() {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = 800;
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.05);
+}
+
+function uiClick() {
+    if (!audioCtx) return;
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.02, audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (data.length * 0.3));
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 2000;
+    const gain = audioCtx.createGain();
+    gain.gain.value = 0.04;
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    src.start();
+}
+
+function uiPing() {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = 1200;
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.03);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.03);
+}
+
+function uiChime() {
+    if (!audioCtx) return;
+    // Two-tone release chime — the only moment the app speaks to you
+    const osc1 = audioCtx.createOscillator();
+    osc1.type = 'sine';
+    osc1.frequency.value = 200;
+    const osc2 = audioCtx.createOscillator();
+    osc2.type = 'sine';
+    osc2.frequency.value = 300;
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+    osc1.connect(gain);
+    osc2.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc1.start();
+    osc2.start(audioCtx.currentTime + 0.08);
+    osc1.stop(audioCtx.currentTime + 0.15);
+    osc2.stop(audioCtx.currentTime + 0.2);
+}
+
 function initAudio() {
     if (audioCtx) return;
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -162,6 +232,7 @@ function updateTimerDisplay() {
 function toggleTimer() {
     if (!audioCtx) initAudio();
     if (audioCtx.state === 'suspended') audioCtx.resume();
+    uiTick();
 
     if (timerRunning) {
         clearInterval(timerInterval);
@@ -238,12 +309,17 @@ function endSession() {
         }
     });
 
-    // Quiet completion
+    // Quiet completion chime after fade
+    setTimeout(() => uiChime(), 5000);
     document.getElementById('timer-display').textContent = 'done';
     document.getElementById('timer-phase').textContent = 'session complete';
     document.getElementById('timer-toggle').textContent = 'restart';
     document.title = 'session complete | Nowhere Labs';
     document.body.classList.remove('phase-break');
+    // Track completion — our north star metric
+    if (window.nwlTrack) {
+        window.nwlTrack('session_complete', { session: currentSession?.name, rounds: sessions });
+    }
 }
 
 function switchPhase() {
@@ -386,7 +462,10 @@ async function loadMoodTrack(mood) {
 
 // Wire up mood buttons
 document.querySelectorAll('.mood-btn').forEach(btn => {
-    btn.addEventListener('click', () => loadMoodTrack(btn.dataset.mood));
+    btn.addEventListener('click', () => {
+        uiPing();
+        loadMoodTrack(btn.dataset.mood);
+    });
 });
 
 // ============================================
@@ -473,7 +552,12 @@ function buildSessionPicker() {
             // Init audio on this user gesture
             if (!audioCtx) initAudio();
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            uiClick(); // tactile feedback
             toggleTimer();
+            // Track session start
+            if (window.nwlTrack) {
+                window.nwlTrack('session_start', { session: session.name });
+            }
         });
         container.appendChild(card);
     });
