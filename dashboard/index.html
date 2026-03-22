@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nowhere Labs — Focus Dashboard</title>
+    <meta name="description" content="Timer, ambient sounds, and curated music in one screen. Your complete focus environment.">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Header -->
+        <header class="dash-header">
+            <a href="/" class="dash-logo">NOWHERE LABS</a>
+            <div class="dash-session-name" id="session-name">new session</div>
+            <div class="dash-actions">
+                <button class="dash-btn" id="save-session">save session</button>
+            </div>
+        </header>
+
+        <!-- Three Panels -->
+        <div class="panels">
+            <!-- Left: Pulse Timer -->
+            <section class="panel panel-timer" id="panel-timer">
+                <h2 class="panel-title">PULSE</h2>
+                <div class="timer-ring-container">
+                    <svg class="timer-svg" viewBox="0 0 200 200">
+                        <circle class="ring-bg" cx="100" cy="100" r="88" />
+                        <circle class="ring-progress" id="ring-progress" cx="100" cy="100" r="88" />
+                    </svg>
+                    <div class="timer-display" id="timer-display">25:00</div>
+                    <div class="timer-phase" id="timer-phase">focus</div>
+                </div>
+                <button class="timer-btn" id="timer-toggle">start</button>
+                <div class="session-dots" id="session-dots"></div>
+            </section>
+
+            <!-- Center: Drift Mixer -->
+            <section class="panel panel-mixer" id="panel-mixer">
+                <h2 class="panel-title">DRIFT</h2>
+                <div class="mixer-layers" id="mixer-layers">
+                    <!-- Layers injected by JS -->
+                </div>
+            </section>
+
+            <!-- Right: Static FM -->
+            <section class="panel panel-radio" id="panel-radio">
+                <h2 class="panel-title">STATIC FM</h2>
+                <div class="now-playing-info">
+                    <div class="track-title" id="radio-track">select a mood</div>
+                    <div class="track-artist" id="radio-artist"></div>
+                </div>
+                <div class="weather-buttons" id="weather-buttons">
+                    <button class="mood-btn active" data-mood="rain">rain</button>
+                    <button class="mood-btn" data-mood="storm">storm</button>
+                    <button class="mood-btn" data-mood="fog">fog</button>
+                    <button class="mood-btn" data-mood="snow">snow</button>
+                    <button class="mood-btn" data-mood="clear">clear</button>
+                </div>
+            </section>
+        </div>
+
+        <!-- Master Controls -->
+        <footer class="master-bar">
+            <div class="master-viz">
+                <canvas id="master-canvas" width="600" height="40"></canvas>
+            </div>
+            <div class="master-controls">
+                <button class="master-play" id="master-play">▶</button>
+                <label class="master-label">ATMOSPHERE</label>
+                <input type="range" class="master-slider" id="master-vol" min="0" max="100" value="70">
+            </div>
+        </footer>
+    </div>
+
+    <script src="dashboard.js"></script>
+    <script src="../track.js" data-project="dashboard"></script>
+</body>
+</html>
