@@ -206,9 +206,9 @@ body {
 
 .mix-layer {
     display: grid;
-    grid-template-columns: 24px 1fr 32px;
+    grid-template-columns: 56px 1fr 28px;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     padding: 8px 12px;
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -221,13 +221,13 @@ body {
     background: rgba(14, 14, 22, 0.9);
 }
 
-.mix-icon {
-    font-size: 14px;
-    text-align: center;
+.mix-label {
+    font-size: 11px;
     color: var(--text-dim);
+    font-weight: 400;
 }
 
-.mix-layer.active .mix-icon { color: var(--text-secondary); }
+.mix-layer.active .mix-label { color: var(--text-secondary); }
 
 .mix-slider {
     -webkit-appearance: none;

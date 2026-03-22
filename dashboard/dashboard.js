@@ -56,7 +56,7 @@ function buildMixerPanel() {
         div.className = 'mix-layer';
         div.id = `layer-${layer.id}`;
         div.innerHTML = `
-            <div class="mix-icon">♪</div>
+            <div class="mix-label">${layer.name}</div>
             <input type="range" class="mix-slider" id="slider-${layer.id}" min="0" max="100" value="0">
             <div class="mix-val" id="val-${layer.id}">0</div>
         `;
