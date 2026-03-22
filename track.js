@@ -2,8 +2,8 @@
 // Embed on any project: <script src="https://nowhere-labs.vercel.app/track.js" data-project="drift"></script>
 
 (function() {
-    const SUPABASE_URL = 'https://uqdohrkjwkeroolwixgx.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVxZG9ocmtqd2tlcm9vbHdpeGd4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODMzMjgsImV4cCI6MjA4ODg1OTMyOH0.9us50YT_wtCClfTo8TPP4_ixtnC6gqEvyGi6MpK0Ssw';
+    const SUPABASE_URL = 'https://lxecuywjwasxijxgnutn.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZWN1eXdqd2FzeGlqeGdudXRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNDM3OTIsImV4cCI6MjA4OTcxOTc5Mn0.Wyq_doDaRZ7EfdpwM2W0_BNtaVI47yN-4cy4yTWl7jo';
 
     const script = document.currentScript;
     const PROJECT = script?.getAttribute('data-project') || 'unknown';
