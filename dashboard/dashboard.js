@@ -182,16 +182,59 @@ function toggleTimer() {
     renderDots();
 }
 
+let currentSession = null;
+
+function loadSession(session) {
+    currentSession = session;
+    document.getElementById('session-name').textContent = session.name;
+
+    // Set timer durations
+    timeRemaining = session.timer.focus * 60;
+    isFocus = true;
+    document.getElementById('timer-phase').textContent = 'focus';
+    updateTimerDisplay();
+
+    // Apply focus mix
+    applyMix(session.focus_mix);
+}
+
+function applyMix(mix) {
+    // Reset all layers first
+    LAYERS.forEach(layer => {
+        const slider = document.getElementById(`slider-${layer.id}`);
+        if (slider) {
+            slider.value = 0;
+            slider.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
+    // Set new levels
+    Object.entries(mix).forEach(([id, val]) => {
+        const slider = document.getElementById(`slider-${id}`);
+        if (slider) {
+            slider.value = val;
+            slider.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
+}
+
 function switchPhase() {
     if (isFocus) {
         sessions++;
         isFocus = false;
-        timeRemaining = BREAK;
+        timeRemaining = currentSession ? currentSession.timer.break * 60 : BREAK;
         document.getElementById('timer-phase').textContent = 'breathe';
+        // Conductor: swap to break mix
+        if (currentSession && currentSession.break_mix) {
+            applyMix(currentSession.break_mix);
+        }
     } else {
         isFocus = true;
-        timeRemaining = FOCUS;
+        timeRemaining = currentSession ? currentSession.timer.focus * 60 : FOCUS;
         document.getElementById('timer-phase').textContent = 'focus';
+        // Conductor: swap back to focus mix
+        if (currentSession && currentSession.focus_mix) {
+            applyMix(currentSession.focus_mix);
+        }
     }
     updateTimerDisplay();
     renderDots();
@@ -234,9 +277,24 @@ document.getElementById('master-play').addEventListener('click', () => {
 document.getElementById('timer-toggle').addEventListener('click', toggleTimer);
 
 document.addEventListener('keydown', (e) => {
-    if (e.key === ' ' && e.target.tagName !== 'INPUT') {
+    if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+    if (e.key === ' ') {
         e.preventDefault();
         toggleTimer();
+    }
+    // 1-5 for default sessions
+    const idx = parseInt(e.key) - 1;
+    if (idx >= 0 && idx < DEFAULT_SESSIONS.length) {
+        loadSession(DEFAULT_SESSIONS[idx]);
+    }
+    // R to reset timer
+    if (e.key === 'r' || e.key === 'R') {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        sessions = 0;
+        if (currentSession) loadSession(currentSession);
+        document.getElementById('timer-toggle').textContent = 'start';
+        renderDots();
     }
 });
 
@@ -266,6 +324,5 @@ const DEFAULT_SESSIONS = [
 ];
 
 buildMixerPanel();
-updateTimerDisplay();
+loadSession(DEFAULT_SESSIONS[0]); // Start with "deep work"
 renderDots();
-updateSessionName();
