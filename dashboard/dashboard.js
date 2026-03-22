@@ -175,6 +175,10 @@ function toggleTimer() {
             }
             timeRemaining--;
             updateTimerDisplay();
+            // Update tab title as a glanceable timer
+            const phase = isFocus ? 'focus' : 'break';
+            const name = currentSession ? currentSession.name : 'session';
+            document.title = `${document.getElementById('timer-display').textContent} — ${name} | Nowhere Labs`;
         }, 1000);
         timerRunning = true;
         document.getElementById('timer-toggle').textContent = 'pause';
@@ -217,9 +221,41 @@ function applyMix(mix) {
     });
 }
 
+function endSession() {
+    clearInterval(timerInterval);
+    timerRunning = false;
+
+    // Fade out all audio over 5 seconds
+    Object.entries(layerStates).forEach(([id, state]) => {
+        if (state.type === 'sample' && state.audio && state.active) {
+            const audio = state.audio;
+            const fadeInterval = setInterval(() => {
+                if (audio.volume > 0.02) audio.volume -= 0.02;
+                else { audio.pause(); clearInterval(fadeInterval); }
+            }, 100);
+        } else if (state.type === 'synth' && state.gain && state.active) {
+            state.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 5);
+        }
+    });
+
+    // Quiet completion
+    document.getElementById('timer-display').textContent = 'done';
+    document.getElementById('timer-phase').textContent = 'session complete';
+    document.getElementById('timer-toggle').textContent = 'restart';
+    document.title = 'session complete | Nowhere Labs';
+    document.body.classList.remove('phase-break');
+}
+
 function switchPhase() {
     if (isFocus) {
         sessions++;
+
+        // Check if all rounds complete
+        if (sessions >= 4) {
+            endSession();
+            return;
+        }
+
         isFocus = false;
         timeRemaining = currentSession ? currentSession.timer.break * 60 : BREAK;
         document.getElementById('timer-phase').textContent = 'breathe';
@@ -406,8 +442,51 @@ const DEFAULT_SESSIONS = [
 ];
 
 buildMixerPanel();
-if (!loadSessionFromUrl()) {
-    loadSession(DEFAULT_SESSIONS[0]); // Start with "deep work"
+
+// Session picker — cold start
+const SESSION_DESCRIPTIONS = {
+    'deep work': 'rain + brown noise. 25 min focus.',
+    'creative flow': 'cafe + fire. 50 min sessions.',
+    'wind down': 'fire + snow. gentle pace.',
+    'morning start': 'birds + leaves. fresh energy.',
+    'late night': 'rain + drone. long focus.',
+};
+
+function buildSessionPicker() {
+    const container = document.getElementById('picker-cards');
+    if (!container) return;
+    DEFAULT_SESSIONS.forEach((session, i) => {
+        const card = document.createElement('div');
+        card.className = 'picker-card';
+        card.innerHTML = `
+            <div class="picker-card-name">${session.name}</div>
+            <div class="picker-card-desc">${SESSION_DESCRIPTIONS[session.name] || ''}</div>
+        `;
+        card.addEventListener('click', () => {
+            // Hide picker, show panels
+            document.getElementById('session-picker').style.display = 'none';
+            document.getElementById('panels').style.display = '';
+            document.querySelector('.master-bar').style.display = '';
+            // Load and start the session
+            loadSession(session);
+            loadMoodTrack('rain');
+            // Init audio on this user gesture
+            if (!audioCtx) initAudio();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            toggleTimer();
+        });
+        container.appendChild(card);
+    });
+}
+
+// Check if arriving from shared URL
+if (loadSessionFromUrl()) {
+    document.getElementById('session-picker').style.display = 'none';
+    document.getElementById('panels').style.display = '';
+    loadMoodTrack('rain');
+} else {
+    // Show picker, hide panels until selection
+    document.querySelector('.master-bar').style.display = 'none';
+    buildSessionPicker();
 }
 renderDots();
-loadMoodTrack('rain'); // Default music mood

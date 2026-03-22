@@ -20,8 +20,17 @@
             </div>
         </header>
 
-        <!-- Three Panels -->
-        <div class="panels">
+        <!-- Session Picker (cold start) -->
+        <div class="session-picker" id="session-picker">
+            <h2 class="picker-title">pick your vibe</h2>
+            <p class="picker-subtitle">we handle the rest</p>
+            <div class="picker-cards" id="picker-cards">
+                <!-- Injected by JS -->
+            </div>
+        </div>
+
+        <!-- Three Panels (hidden until session selected) -->
+        <div class="panels" id="panels" style="display:none">
             <!-- Left: Pulse Timer -->
             <section class="panel panel-timer" id="panel-timer">
                 <h2 class="panel-title">TIMER</h2>

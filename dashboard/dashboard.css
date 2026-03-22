@@ -91,6 +91,67 @@ body.phase-break {
     color: var(--text-secondary);
 }
 
+/* Session Picker */
+.session-picker {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+}
+
+.picker-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 6px;
+    margin-bottom: 8px;
+}
+
+.picker-subtitle {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-weight: 300;
+    margin-bottom: 40px;
+}
+
+.picker-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    max-width: 800px;
+    width: 100%;
+}
+
+.picker-card {
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(14, 14, 22, 0.7) 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.picker-card:hover {
+    border-color: rgba(122, 138, 106, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.picker-card-name {
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.picker-card-desc {
+    font-size: 10px;
+    color: var(--text-dim);
+    line-height: 1.5;
+}
+
 /* Panels */
 .panels {
     flex: 1;
