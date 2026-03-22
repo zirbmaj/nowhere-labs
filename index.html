@@ -79,17 +79,19 @@
             display: block;
             text-decoration: none;
             color: var(--text);
-            padding: 32px;
-            border: 1px solid rgba(255,255,255,0.04);
-            border-radius: 12px;
+            padding: 32px 36px;
+            border: 1px solid rgba(255,255,255,0.03);
+            border-radius: 16px;
             margin-bottom: 16px;
             transition: all 0.3s ease;
-            background: rgba(255,255,255,0.01);
+            background: linear-gradient(135deg, rgba(14, 14, 20, 0.6) 0%, rgba(10, 10, 16, 0.8) 100%);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         .project:hover {
-            border-color: rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.02);
-            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.08);
+            background: linear-gradient(135deg, rgba(18, 18, 26, 0.8) 0%, rgba(14, 14, 20, 0.9) 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
         }
         .project.drift:hover { border-color: rgba(122,138,106,0.3); }
         .project.drift .project-status { color: #7a8a6a; border-color: rgba(122,138,106,0.3); }
