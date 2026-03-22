@@ -243,6 +243,29 @@ document.addEventListener('keydown', (e) => {
 // ============================================
 // INIT
 // ============================================
+// Auto-generate session name
+function updateSessionName() {
+    const h = new Date().getHours();
+    let timeLabel;
+    if (h >= 23 || h < 5) timeLabel = 'late night';
+    else if (h >= 5 && h < 12) timeLabel = 'morning';
+    else if (h >= 12 && h < 17) timeLabel = 'afternoon';
+    else if (h >= 17 && h < 20) timeLabel = 'evening';
+    else timeLabel = 'night';
+    const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+    document.getElementById('session-name').textContent = 'untitled · ' + days[new Date().getDay()] + ' ' + timeLabel;
+}
+
+// Default sessions
+const DEFAULT_SESSIONS = [
+    { name: 'deep work', timer: { focus: 25, break: 5 }, focus_mix: { rain: 60, 'brown-noise': 40 }, break_mix: { birds: 50, leaves: 30 } },
+    { name: 'creative flow', timer: { focus: 50, break: 10 }, focus_mix: { cafe: 55, fire: 30 }, break_mix: { waves: 60, wind: 20 } },
+    { name: 'wind down', timer: { focus: 15, break: 5 }, focus_mix: { fire: 70, snow: 40 }, break_mix: { birds: 40 } },
+    { name: 'morning start', timer: { focus: 20, break: 5 }, focus_mix: { birds: 50, leaves: 30, wind: 20 }, break_mix: { waves: 60 } },
+    { name: 'late night', timer: { focus: 45, break: 15 }, focus_mix: { rain: 50, drone: 30 }, break_mix: { snow: 40, wind: 20 } },
+];
+
 buildMixerPanel();
 updateTimerDisplay();
 renderDots();
+updateSessionName();

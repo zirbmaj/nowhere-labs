@@ -341,17 +341,25 @@ body {
 }
 
 .master-play {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     background: var(--accent);
     border: none;
     color: var(--bg);
-    font-size: 12px;
+    font-size: 16px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px var(--accent-glow);
+    transition: all 0.2s;
+}
+
+.master-play:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px var(--accent-glow);
 }
 
 .master-label {
