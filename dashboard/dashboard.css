@@ -19,6 +19,15 @@ body {
     font-family: 'Inter', sans-serif;
     height: 100vh;
     overflow: hidden;
+    transition: background 1.5s ease;
+}
+
+/* Phase color shift — the room changes */
+body.phase-break {
+    --accent: var(--accent-warm);
+    --accent-glow: rgba(138, 122, 106, 0.12);
+    --bg: #08060a;
+    --bg-panel: #0c0a10;
 }
 
 .dashboard {
