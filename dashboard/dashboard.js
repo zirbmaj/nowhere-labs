@@ -581,7 +581,7 @@ function buildSessionPicker() {
 
     // "Start empty" card — build your own session
     const emptyCard = document.createElement('div');
-    emptyCard.className = 'picker-card';
+    emptyCard.className = 'picker-card picker-card-empty';
     emptyCard.innerHTML = `
         <div class="picker-card-name">start empty</div>
         <div class="picker-card-desc">build your own. all sliders at zero.</div>

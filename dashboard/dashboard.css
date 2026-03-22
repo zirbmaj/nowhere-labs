@@ -152,6 +152,15 @@ body.phase-break {
     line-height: 1.5;
 }
 
+.picker-card-empty {
+    border-style: dashed;
+    opacity: 0.6;
+}
+
+.picker-card-empty:hover {
+    opacity: 1;
+}
+
 /* Panels */
 .panels {
     flex: 1;
