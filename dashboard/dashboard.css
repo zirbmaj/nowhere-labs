@@ -409,17 +409,74 @@ body {
     cursor: pointer;
 }
 
+/* Mobile Tab Bar */
+.mobile-tabs {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(0deg, var(--bg) 0%, var(--bg-panel) 100%);
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+    padding: 8px 0;
+    z-index: 100;
+}
+
+.tab-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 10px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.tab-btn.active {
+    color: var(--accent);
+}
+
 /* Mobile */
 @media (max-width: 768px) {
+    .mobile-tabs {
+        display: flex;
+    }
+
     .panels {
         grid-template-columns: 1fr;
-        grid-template-rows: auto;
+        grid-template-rows: 1fr;
     }
 
     .panel {
-        min-height: 50vh;
+        display: none;
+        min-height: 0;
+        flex: 1;
     }
 
-    body { overflow: auto; }
-    .dashboard { height: auto; }
+    .panel.active-tab {
+        display: flex;
+    }
+
+    body { overflow: hidden; }
+    .dashboard { height: 100vh; padding-bottom: 48px; }
+
+    .master-bar {
+        position: fixed;
+        bottom: 48px;
+        left: 0;
+        width: 100%;
+        z-index: 99;
+        background: var(--bg);
+    }
+
+    .dash-header {
+        padding: 8px 16px;
+    }
+
+    .dash-logo { font-size: 9px; }
+    .dash-session-name { font-size: 11px; }
 }

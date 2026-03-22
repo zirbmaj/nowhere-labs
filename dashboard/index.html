@@ -75,6 +75,26 @@
         </footer>
     </div>
 
+    <!-- Mobile Tab Bar -->
+    <nav class="mobile-tabs" id="mobile-tabs">
+        <button class="tab-btn active" data-panel="panel-timer">timer</button>
+        <button class="tab-btn" data-panel="panel-mixer">mix</button>
+        <button class="tab-btn" data-panel="panel-radio">music</button>
+    </nav>
+
+    <script>
+    // Mobile tab navigation
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-tab'));
+            btn.classList.add('active');
+            document.getElementById(btn.dataset.panel).classList.add('active-tab');
+        });
+    });
+    // Set initial active tab
+    document.getElementById('panel-timer').classList.add('active-tab');
+    </script>
     <script src="dashboard.js"></script>
     <script src="../track.js" data-project="dashboard"></script>
 </body>
