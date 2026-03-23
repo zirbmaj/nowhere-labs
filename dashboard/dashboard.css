@@ -336,6 +336,27 @@ body.phase-break {
 
 .mix-layer.active .mix-label { color: var(--text-secondary); }
 .mix-layer.muted .mix-label { text-decoration: line-through; opacity: 0.4; }
+.mix-layer.hidden-layer { display: none; }
+
+.mix-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 8px;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+}
+
+.mix-toggle:hover {
+    border-color: rgba(122, 138, 106, 0.3);
+    color: var(--text-secondary);
+}
 
 .mix-slider {
     -webkit-appearance: none;

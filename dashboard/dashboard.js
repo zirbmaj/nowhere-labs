@@ -125,11 +125,15 @@ const LAYERS = [
     { id: 'drone', name: 'Drone', type: 'synth' },
 ];
 
+const FEATURED_LAYERS = ['rain', 'fire', 'cafe', 'birds', 'brown-noise', 'drone'];
+let dashShowAll = localStorage.getItem('dash_show_all') === 'true';
+
 function buildMixerPanel() {
     const container = document.getElementById('mixer-layers');
     LAYERS.forEach(layer => {
+        const isFeatured = FEATURED_LAYERS.includes(layer.id);
         const div = document.createElement('div');
-        div.className = 'mix-layer';
+        div.className = 'mix-layer' + (!isFeatured && !dashShowAll ? ' hidden-layer' : '');
         div.id = `layer-${layer.id}`;
         div.innerHTML = `
             <div class="mix-label" title="Click to mute/unmute" style="cursor:pointer">${layer.name}</div>
@@ -168,6 +172,23 @@ function buildMixerPanel() {
         container.appendChild(div);
         layerStates[layer.id] = { volume: 0, active: false, initialized: false };
     });
+
+    // Show all toggle
+    const toggle = document.createElement('button');
+    toggle.className = 'mix-toggle';
+    toggle.textContent = dashShowAll ? 'show fewer' : `show all ${LAYERS.length} layers`;
+    toggle.addEventListener('click', () => {
+        dashShowAll = !dashShowAll;
+        localStorage.setItem('dash_show_all', dashShowAll);
+        document.querySelectorAll('.mix-layer').forEach(el => {
+            const layerId = el.id.replace('layer-', '');
+            if (!FEATURED_LAYERS.includes(layerId)) {
+                el.classList.toggle('hidden-layer', !dashShowAll);
+            }
+        });
+        toggle.textContent = dashShowAll ? 'show fewer' : `show all ${LAYERS.length} layers`;
+    });
+    container.appendChild(toggle);
 }
 
 function setLayerVolume(id, vol, layerDef) {
