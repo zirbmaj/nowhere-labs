@@ -160,7 +160,7 @@ body.phase-break .panel-timer {
     right: 0;
     bottom: 0;
     background: radial-gradient(circle at 50% 120%, var(--accent-glow) 0%, transparent 70%);
-    opacity: 0;
+    opacity: 0.4;
     transition: opacity 0.6s ease;
     pointer-events: none;
 }
@@ -184,14 +184,16 @@ body.phase-break .panel-timer {
 
 .picker-card-desc {
     font-size: 10px;
-    color: var(--text-dim);
+    color: var(--text-secondary);
+    opacity: 0.7;
     line-height: 1.5;
     position: relative;
-    transition: color 0.3s;
+    transition: color 0.3s, opacity 0.3s;
 }
 
 .picker-card:hover .picker-card-desc {
     color: var(--text-secondary);
+    opacity: 1;
 }
 
 .picker-card-sounds {
@@ -204,7 +206,8 @@ body.phase-break .panel-timer {
 .picker-card-time {
     font-family: 'Space Mono', monospace;
     font-size: 9px;
-    color: var(--text-dim);
+    color: var(--text-secondary);
+    opacity: 0.6;
     letter-spacing: 1px;
     position: relative;
 }
@@ -231,25 +234,25 @@ body.phase-break .panel-timer {
 .picker-card[data-mood="clear"] .fp-dot-mini { background: #b89e6b; }
 
 /* Mood-tinted picker cards */
-.picker-card[data-mood="rain"] { border-color: rgba(107, 143, 158, 0.08); }
-.picker-card[data-mood="rain"]:hover { border-color: rgba(107, 143, 158, 0.3); box-shadow: 0 8px 24px rgba(107, 143, 158, 0.1); }
-.picker-card[data-mood="rain"]::before { background: radial-gradient(circle at 50% 120%, rgba(107, 143, 158, 0.1) 0%, transparent 70%); }
+.picker-card[data-mood="rain"] { border-color: rgba(107, 143, 158, 0.15); }
+.picker-card[data-mood="rain"]:hover { border-color: rgba(107, 143, 158, 0.35); box-shadow: 0 8px 24px rgba(107, 143, 158, 0.12); }
+.picker-card[data-mood="rain"]::before { background: radial-gradient(circle at 50% 120%, rgba(107, 143, 158, 0.12) 0%, transparent 70%); }
 
-.picker-card[data-mood="storm"] { border-color: rgba(158, 107, 158, 0.08); }
-.picker-card[data-mood="storm"]:hover { border-color: rgba(158, 107, 158, 0.3); box-shadow: 0 8px 24px rgba(158, 107, 158, 0.1); }
-.picker-card[data-mood="storm"]::before { background: radial-gradient(circle at 50% 120%, rgba(158, 107, 158, 0.1) 0%, transparent 70%); }
+.picker-card[data-mood="storm"] { border-color: rgba(158, 107, 158, 0.15); }
+.picker-card[data-mood="storm"]:hover { border-color: rgba(158, 107, 158, 0.35); box-shadow: 0 8px 24px rgba(158, 107, 158, 0.12); }
+.picker-card[data-mood="storm"]::before { background: radial-gradient(circle at 50% 120%, rgba(158, 107, 158, 0.12) 0%, transparent 70%); }
 
-.picker-card[data-mood="fog"] { border-color: rgba(138, 138, 126, 0.08); }
-.picker-card[data-mood="fog"]:hover { border-color: rgba(138, 138, 126, 0.3); box-shadow: 0 8px 24px rgba(138, 138, 126, 0.1); }
-.picker-card[data-mood="fog"]::before { background: radial-gradient(circle at 50% 120%, rgba(138, 138, 126, 0.1) 0%, transparent 70%); }
+.picker-card[data-mood="fog"] { border-color: rgba(138, 138, 126, 0.15); }
+.picker-card[data-mood="fog"]:hover { border-color: rgba(138, 138, 126, 0.35); box-shadow: 0 8px 24px rgba(138, 138, 126, 0.12); }
+.picker-card[data-mood="fog"]::before { background: radial-gradient(circle at 50% 120%, rgba(138, 138, 126, 0.12) 0%, transparent 70%); }
 
-.picker-card[data-mood="snow"] { border-color: rgba(158, 170, 184, 0.08); }
-.picker-card[data-mood="snow"]:hover { border-color: rgba(158, 170, 184, 0.3); box-shadow: 0 8px 24px rgba(158, 170, 184, 0.1); }
-.picker-card[data-mood="snow"]::before { background: radial-gradient(circle at 50% 120%, rgba(158, 170, 184, 0.1) 0%, transparent 70%); }
+.picker-card[data-mood="snow"] { border-color: rgba(158, 170, 184, 0.15); }
+.picker-card[data-mood="snow"]:hover { border-color: rgba(158, 170, 184, 0.35); box-shadow: 0 8px 24px rgba(158, 170, 184, 0.12); }
+.picker-card[data-mood="snow"]::before { background: radial-gradient(circle at 50% 120%, rgba(158, 170, 184, 0.12) 0%, transparent 70%); }
 
-.picker-card[data-mood="clear"] { border-color: rgba(184, 158, 107, 0.08); }
-.picker-card[data-mood="clear"]:hover { border-color: rgba(184, 158, 107, 0.3); box-shadow: 0 8px 24px rgba(184, 158, 107, 0.1); }
-.picker-card[data-mood="clear"]::before { background: radial-gradient(circle at 50% 120%, rgba(184, 158, 107, 0.1) 0%, transparent 70%); }
+.picker-card[data-mood="clear"] { border-color: rgba(184, 158, 107, 0.15); }
+.picker-card[data-mood="clear"]:hover { border-color: rgba(184, 158, 107, 0.35); box-shadow: 0 8px 24px rgba(184, 158, 107, 0.12); }
+.picker-card[data-mood="clear"]::before { background: radial-gradient(circle at 50% 120%, rgba(184, 158, 107, 0.12) 0%, transparent 70%); }
 
 .picker-card-empty {
     border-style: dashed;
@@ -364,7 +367,8 @@ body.phase-break .panel-timer {
     font-family: 'Space Mono', monospace;
     font-size: 9px;
     letter-spacing: 6px;
-    color: var(--text-dim);
+    color: var(--text-secondary);
+    opacity: 0.6;
     text-align: center;
     margin-bottom: 24px;
 }
