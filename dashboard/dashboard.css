@@ -338,6 +338,21 @@ body.phase-break {
 .mix-layer.muted .mix-label { text-decoration: line-through; opacity: 0.4; }
 .mix-layer.hidden-layer { display: none; }
 
+.mix-slider-wrap {
+    position: relative;
+    width: 100%;
+}
+
+.mix-wave {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
 .mix-toggle {
     background: none;
     border: 1px solid var(--border);

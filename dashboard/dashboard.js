@@ -137,7 +137,10 @@ function buildMixerPanel() {
         div.id = `layer-${layer.id}`;
         div.innerHTML = `
             <div class="mix-label" title="Click to mute/unmute" style="cursor:pointer">${layer.name}</div>
-            <input type="range" class="mix-slider" id="slider-${layer.id}" min="0" max="100" value="0">
+            <div class="mix-slider-wrap">
+                <canvas class="mix-wave" width="200" height="24"></canvas>
+                <input type="range" class="mix-slider" id="slider-${layer.id}" min="0" max="100" value="0">
+            </div>
             <div class="mix-val" id="val-${layer.id}">0</div>
         `;
 
@@ -150,7 +153,31 @@ function buildMixerPanel() {
             if (!audioCtx) initAudio();
             if (audioCtx.state === 'suspended') audioCtx.resume();
             setLayerVolume(layer.id, val / 100, layer);
+            if (val > 0 && !waveFrame) drawWave();
+            if (val === 0 && waveFrame) { cancelAnimationFrame(waveFrame); waveFrame = null; const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); }
         });
+
+        // Waveform animation
+        const canvas = div.querySelector('.mix-wave');
+        let waveFrame;
+        function drawWave() {
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const vol = parseInt(div.querySelector('.mix-slider').value) / 100;
+            ctx.clearRect(0, 0, w, h);
+            if (vol <= 0) { waveFrame = null; return; }
+            ctx.strokeStyle = `rgba(122, 138, 106, ${0.3 * vol})`;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            const t = Date.now() / 1000;
+            for (let x = 0; x < w; x++) {
+                const nx = x / w;
+                const y = h/2 + Math.sin(nx * 6 + t) * (h * 0.3) * vol + Math.sin(nx * 14 + t * 1.7) * (h * 0.15) * vol;
+                if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            waveFrame = requestAnimationFrame(drawWave);
+        }
 
         // Label click = mute toggle
         let savedVol = 0;
