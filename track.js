@@ -57,23 +57,20 @@
 
     function flushQueue() {
         if (eventQueue.length === 0) return;
-        const batch = eventQueue.splice(0, 50); // max 50 per flush
+        const batch = eventQueue.splice(0, 50);
         const url = `${SUPABASE_URL}/rest/v1/analytics_events`;
-        const headers = {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal',
-        };
-        // Send each event (Supabase REST doesn't support array insert via anon easily)
-        batch.forEach(payload => {
-            fetch(url, {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(payload),
-                keepalive: true,
-            }).catch(() => {});
-        });
+        // Supabase REST supports array insert — one POST for the whole batch
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal',
+            },
+            body: JSON.stringify(batch),
+            keepalive: true,
+        }).catch(() => {});
     }
 
     // Flush every 5 seconds
@@ -137,6 +134,18 @@
         } else {
             lastVisible = Date.now();
             isVisible = true;
+        }
+    });
+
+    // Auto-track elements with data-nwl-track attribute
+    // e.g., <button data-nwl-track="cta_click" data-nwl-label="start mixing">
+    document.addEventListener('click', (e) => {
+        const el = e.target.closest('[data-nwl-track]');
+        if (el) {
+            track(el.dataset.nwlTrack, {
+                label: el.dataset.nwlLabel || el.textContent.trim().slice(0, 50),
+                path: window.location.pathname,
+            });
         }
     });
 
