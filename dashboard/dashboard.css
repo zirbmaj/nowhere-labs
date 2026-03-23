@@ -166,32 +166,59 @@ body.phase-break {
     border-radius: 12px;
     padding: 24px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.4s ease;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.picker-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 120%, var(--accent-glow) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
 }
 
 .picker-card:hover {
     border-color: rgba(122, 138, 106, 0.3);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px var(--accent-glow);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 8px 24px var(--accent-glow);
+}
+
+.picker-card:hover::before {
+    opacity: 1;
 }
 
 .picker-card-name {
     font-size: 15px;
     font-weight: 500;
     margin-bottom: 6px;
+    position: relative;
 }
 
 .picker-card-desc {
     font-size: 10px;
     color: var(--text-dim);
     line-height: 1.5;
+    position: relative;
+    transition: color 0.3s;
+}
+
+.picker-card:hover .picker-card-desc {
+    color: var(--text-secondary);
 }
 
 .picker-card-sounds {
     font-size: 11px;
     color: var(--text-secondary);
     margin-bottom: 4px;
+    position: relative;
 }
 
 .picker-card-time {
@@ -199,6 +226,7 @@ body.phase-break {
     font-size: 9px;
     color: var(--text-dim);
     letter-spacing: 1px;
+    position: relative;
 }
 
 .picker-card-empty {
@@ -208,6 +236,10 @@ body.phase-break {
 
 .picker-card-empty:hover {
     opacity: 1;
+}
+
+.picker-card-empty::before {
+    display: none;
 }
 
 /* Session Summary (end screen) */
