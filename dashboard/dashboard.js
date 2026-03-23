@@ -664,10 +664,18 @@ function buildSessionPicker() {
             <div class="picker-card-desc">${SESSION_DESCRIPTIONS[session.name] || ''}</div>
         `;
         card.addEventListener('click', () => {
-            // Hide picker, show panels
-            document.getElementById('session-picker').style.display = 'none';
-            document.getElementById('panels').style.display = '';
-            document.querySelector('.master-bar').style.display = '';
+            // Fade out picker, fade in panels
+            const picker = document.getElementById('session-picker');
+            picker.style.opacity = '0';
+            picker.style.transition = 'opacity 0.4s';
+            setTimeout(() => {
+                picker.style.display = 'none';
+                const panels = document.getElementById('panels');
+                panels.style.display = '';
+                panels.style.animation = 'panelsFadeIn 0.6s ease';
+                document.querySelector('.master-bar').style.display = '';
+                document.querySelector('.master-bar').style.animation = 'panelsFadeIn 0.8s ease';
+            }, 400);
             // Load and start the session
             loadSession(session);
             loadMoodTrack('rain');
@@ -692,9 +700,17 @@ function buildSessionPicker() {
         <div class="picker-card-desc">build your own. all sliders at zero.</div>
     `;
     emptyCard.addEventListener('click', () => {
-        document.getElementById('session-picker').style.display = 'none';
-        document.getElementById('panels').style.display = '';
-        document.querySelector('.master-bar').style.display = '';
+        const picker = document.getElementById('session-picker');
+        picker.style.opacity = '0';
+        picker.style.transition = 'opacity 0.4s';
+        setTimeout(() => {
+            picker.style.display = 'none';
+            const panels = document.getElementById('panels');
+            panels.style.display = '';
+            panels.style.animation = 'panelsFadeIn 0.6s ease';
+            document.querySelector('.master-bar').style.display = '';
+            document.querySelector('.master-bar').style.animation = 'panelsFadeIn 0.8s ease';
+        }, 400);
         // Don't load a session — leave everything at zero
         loadMoodTrack('rain');
         if (!audioCtx) initAudio();

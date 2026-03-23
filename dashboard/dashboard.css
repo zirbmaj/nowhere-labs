@@ -99,6 +99,12 @@ body.phase-break {
     align-items: center;
     justify-content: center;
     padding: 40px 24px;
+    animation: pickerFadeIn 1s ease;
+}
+
+@keyframes pickerFadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .picker-title {
@@ -107,6 +113,12 @@ body.phase-break {
     font-weight: 700;
     letter-spacing: 6px;
     margin-bottom: 8px;
+    animation: breathe 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
 }
 
 .picker-subtitle {
@@ -159,6 +171,12 @@ body.phase-break {
 
 .picker-card-empty:hover {
     opacity: 1;
+}
+
+/* Panel transition */
+@keyframes panelsFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 /* Panels */
