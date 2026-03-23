@@ -83,8 +83,7 @@
             .nwl-nav-right { gap: 10px; flex-wrap: wrap; justify-content: center; }
             .nwl-nav-right a:nth-child(1),
             .nwl-nav-right a:nth-child(5),
-            .nwl-nav-right a:nth-child(7),
-            .nwl-nav-right a:nth-child(9) { display: none; }
+            .nwl-nav-right a:nth-child(8) { display: none; }
         }
     `;
     document.head.appendChild(style);
