@@ -737,6 +737,9 @@ const DEFAULT_SESSIONS = [
     { name: 'wind down', timer: { focus: 15, break: 5 }, focus_mix: { fire: 70, snow: 40 }, break_mix: { birds: 40 }, focus_mood: 'snow', break_mood: 'clear' },
     { name: 'morning start', timer: { focus: 20, break: 5 }, focus_mix: { birds: 50, leaves: 30, wind: 20 }, break_mix: { waves: 60 }, focus_mood: 'clear', break_mood: 'rain' },
     { name: 'late night', timer: { focus: 45, break: 15 }, focus_mix: { rain: 50, drone: 30 }, break_mix: { snow: 40, wind: 20 }, focus_mood: 'storm', break_mood: 'fog' },
+    { name: 'power hour', timer: { focus: 60, break: 10 }, focus_mix: { 'brown-noise': 60, rain: 20, drone: 15 }, break_mix: { birds: 40, wind: 20 }, focus_mood: 'rain', break_mood: 'clear' },
+    { name: 'cozy reading', timer: { focus: 30, break: 10 }, focus_mix: { fire: 55, rain: 30, vinyl: 20 }, break_mix: { cafe: 40 }, focus_mood: 'snow', break_mood: 'fog' },
+    { name: 'study sprint', timer: { focus: 25, break: 3 }, focus_mix: { 'white-noise': 50, cafe: 20 }, break_mix: { leaves: 30, wind: 15 }, focus_mood: 'fog', break_mood: 'clear' },
 ];
 
 buildMixerPanel();
@@ -748,6 +751,9 @@ const SESSION_DESCRIPTIONS = {
     'wind down': { sounds: 'fire + snow', time: '15 min focus · 5 min break' },
     'morning start': { sounds: 'birds + leaves + wind', time: '20 min focus · 5 min break' },
     'late night': { sounds: 'rain + drone', time: '45 min focus · 15 min break' },
+    'power hour': { sounds: 'brown noise + rain + drone', time: '60 min focus · 10 min break' },
+    'cozy reading': { sounds: 'fire + rain + vinyl', time: '30 min focus · 10 min break' },
+    'study sprint': { sounds: 'white noise + cafe', time: '25 min focus · 3 min break' },
 };
 
 function buildSessionPicker() {
