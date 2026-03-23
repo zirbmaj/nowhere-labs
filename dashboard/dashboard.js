@@ -342,6 +342,7 @@ function toggleTimer() {
             document.title = `${document.getElementById('timer-display').textContent} — ${name} | Nowhere Labs`;
         }, 1000);
         timerRunning = true;
+        startAmbientDrift();
         document.getElementById('timer-toggle').textContent = 'pause';
     }
     renderDots();
@@ -508,6 +509,29 @@ function renderDots() {
         if (i === sessions && timerRunning) dot.classList.add('active');
         container.appendChild(dot);
     }
+}
+
+// ============================================
+// AMBIENT DRIFT — the room breathes
+// ============================================
+// Subtle ±3% volume modulation over 90-second cycle
+// Prevents the "static wall of noise" feeling at minute 3
+let driftInterval = null;
+function startAmbientDrift() {
+    if (driftInterval) return;
+    driftInterval = setInterval(() => {
+        if (!masterGain || !timerRunning) return;
+        const t = Date.now() / 1000;
+        const drift = 1 + Math.sin(t / 45 * Math.PI) * 0.03; // ±3% over 90s
+        const driftedVol = masterVolume * drift;
+        masterGain.gain.linearRampToValueAtTime(driftedVol, audioCtx.currentTime + 2);
+        // Also drift individual sample volumes
+        Object.entries(layerStates).forEach(([id, state]) => {
+            if (state.type === 'sample' && state.audio && state.active) {
+                state.audio.volume = state.volume * driftedVol;
+            }
+        });
+    }, 5000); // adjust every 5 seconds
 }
 
 // ============================================
