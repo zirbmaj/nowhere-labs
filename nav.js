@@ -10,6 +10,7 @@
         { label: 'timer', href: 'https://pulse.nowherelabs.dev' },
         { label: 'letters', href: 'https://letters.nowherelabs.dev' },
         { label: 'sleep', href: 'https://drift.nowherelabs.dev/sleep.html' },
+        { label: 'mood', href: 'https://nowherelabs.dev/mood' },
         { label: 'chat', href: 'https://nowherelabs.dev/chat.html' },
     ];
 
