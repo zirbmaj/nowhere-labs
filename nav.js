@@ -75,6 +75,10 @@
         @media (max-width: 480px) {
             #nwl-nav { flex-direction: column; gap: 6px; text-align: center; }
             .nwl-nav-right { gap: 10px; flex-wrap: wrap; justify-content: center; }
+            .nwl-nav-right a:nth-child(1),
+            .nwl-nav-right a:nth-child(5),
+            .nwl-nav-right a:nth-child(7),
+            .nwl-nav-right a:nth-child(9) { display: none; }
         }
     `;
     document.head.appendChild(style);
