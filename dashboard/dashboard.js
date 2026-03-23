@@ -690,10 +690,10 @@ async function loadMoodTrack(mood) {
         if (!data.id) throw new Error('no track found');
         document.getElementById('radio-track').textContent = data.name || track.title;
         document.getElementById('radio-artist').textContent = data.artist || track.artist;
-        embedContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/track/${data.id}?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media" loading="lazy" style="border-radius:8px;"></iframe>`;
+        embedContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/track/${data.id}?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media" loading="lazy" style="border-radius:8px;"></iframe><p style="font-size:9px;color:var(--text-dim);text-align:center;margin-top:6px;letter-spacing:1px;font-family:'Space Mono',monospace">30s preview · log into spotify for full tracks</p>`;
         spotifyEmbedLoaded = true;
     } catch(e) {
-        embedContainer.innerHTML = `<div class="embed-fallback">couldn't load music for "${mood}". <a href="https://static-fm.nowherelabs.dev" target="_blank" style="color:var(--accent)">open static fm</a> instead</div>`;
+        embedContainer.innerHTML = `<div class="embed-fallback">couldn't load music for "${mood}".<br><span style="font-size:10px;opacity:0.6">spotify plays 30s previews, or full tracks if you're logged in.</span><br><a href="https://static-fm.nowherelabs.dev" target="_blank" style="color:var(--accent)">open static fm</a> for full radio experience</div>`;
         spotifyEmbedLoaded = false;
     }
 }
