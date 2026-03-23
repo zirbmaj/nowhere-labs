@@ -132,7 +132,7 @@ function buildMixerPanel() {
         div.className = 'mix-layer';
         div.id = `layer-${layer.id}`;
         div.innerHTML = `
-            <div class="mix-label">${layer.name}</div>
+            <div class="mix-label" title="Click to mute/unmute" style="cursor:pointer">${layer.name}</div>
             <input type="range" class="mix-slider" id="slider-${layer.id}" min="0" max="100" value="0">
             <div class="mix-val" id="val-${layer.id}">0</div>
         `;
@@ -146,6 +146,23 @@ function buildMixerPanel() {
             if (!audioCtx) initAudio();
             if (audioCtx.state === 'suspended') audioCtx.resume();
             setLayerVolume(layer.id, val / 100, layer);
+        });
+
+        // Label click = mute toggle
+        let savedVol = 0;
+        div.querySelector('.mix-label').addEventListener('click', () => {
+            const current = parseInt(slider.value);
+            if (current > 0) {
+                savedVol = current;
+                slider.value = 0;
+                slider.dispatchEvent(new Event('input'));
+                div.classList.add('muted');
+            } else if (savedVol > 0) {
+                slider.value = savedVol;
+                slider.dispatchEvent(new Event('input'));
+                div.classList.remove('muted');
+            }
+            uiTick();
         });
 
         container.appendChild(div);
