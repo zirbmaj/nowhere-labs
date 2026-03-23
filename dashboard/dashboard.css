@@ -223,6 +223,12 @@ body.phase-break .panel-timer {
     display: inline-block;
 }
 
+.picker-card[data-mood="rain"] .fp-dot-mini { background: #6b8f9e; }
+.picker-card[data-mood="storm"] .fp-dot-mini { background: #9e6b9e; }
+.picker-card[data-mood="fog"] .fp-dot-mini { background: #8a8a7e; }
+.picker-card[data-mood="snow"] .fp-dot-mini { background: #9eaab8; }
+.picker-card[data-mood="clear"] .fp-dot-mini { background: #b89e6b; }
+
 /* Mood-tinted picker cards */
 .picker-card[data-mood="rain"] { border-color: rgba(107, 143, 158, 0.08); }
 .picker-card[data-mood="rain"]:hover { border-color: rgba(107, 143, 158, 0.3); box-shadow: 0 8px 24px rgba(107, 143, 158, 0.1); }
