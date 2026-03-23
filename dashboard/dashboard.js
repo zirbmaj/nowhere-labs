@@ -401,14 +401,68 @@ function endSession() {
 
     // Quiet completion chime after fade
     setTimeout(() => uiChime(), 5000);
+
+    // Calculate session stats
+    const focusMins = currentSession ? currentSession.timer.focus : 25;
+    const breakMins = currentSession ? currentSession.timer.break : 5;
+    const totalFocus = focusMins * sessions;
+    const sessionName = currentSession ? currentSession.name : 'custom session';
+
     document.getElementById('timer-display').textContent = 'done';
-    document.getElementById('timer-phase').textContent = 'session complete';
-    document.getElementById('timer-toggle').textContent = 'restart';
+    document.getElementById('timer-phase').textContent = '';
     document.title = 'session complete | Nowhere Labs';
     document.body.classList.remove('phase-break');
+
+    // Show session summary after sounds fade
+    setTimeout(() => {
+        const timerPanel = document.getElementById('panel-timer');
+        const summary = document.createElement('div');
+        summary.className = 'session-summary';
+        summary.innerHTML = `
+            <div class="summary-stat">${totalFocus} minutes of focus</div>
+            <div class="summary-detail">${sessions} rounds of ${sessionName}</div>
+            <button class="summary-btn" id="restart-same">same vibe again</button>
+            <button class="summary-btn summary-btn-alt" id="restart-new">try something different</button>
+        `;
+        // Replace the timer button and dots
+        const oldBtn = document.getElementById('timer-toggle');
+        const oldDots = document.getElementById('session-dots');
+        if (oldBtn) oldBtn.style.display = 'none';
+        if (oldDots) oldDots.style.display = 'none';
+        timerPanel.appendChild(summary);
+        summary.style.animation = 'panelsFadeIn 1s ease';
+
+        // Restart same session
+        document.getElementById('restart-same').addEventListener('click', () => {
+            summary.remove();
+            if (oldBtn) oldBtn.style.display = '';
+            if (oldDots) oldDots.style.display = '';
+            sessions = 0;
+            isFocus = true;
+            if (currentSession) loadSession(currentSession);
+            renderDots();
+            toggleTimer();
+        });
+
+        // Go back to session picker
+        document.getElementById('restart-new').addEventListener('click', () => {
+            summary.remove();
+            if (oldBtn) oldBtn.style.display = '';
+            if (oldDots) oldDots.style.display = '';
+            sessions = 0;
+            isFocus = true;
+            document.getElementById('panels').style.display = 'none';
+            document.querySelector('.master-bar').style.display = 'none';
+            const picker = document.getElementById('session-picker');
+            picker.style.display = '';
+            picker.style.opacity = '1';
+            document.title = 'Nowhere Labs — Focus Dashboard';
+        });
+    }, 6000);
+
     // Track completion — our north star metric
     if (window.nwlTrack) {
-        window.nwlTrack('session_complete', { session: currentSession?.name, rounds: sessions });
+        window.nwlTrack('session_complete', { session: sessionName, rounds: sessions, totalFocus });
     }
 }
 

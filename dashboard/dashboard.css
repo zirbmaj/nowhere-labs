@@ -173,6 +173,56 @@ body.phase-break {
     opacity: 1;
 }
 
+/* Session Summary (end screen) */
+.session-summary {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.summary-stat {
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+}
+
+.summary-detail {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+}
+
+.summary-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    color: var(--bg);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.summary-btn:hover {
+    box-shadow: 0 0 16px var(--accent-glow);
+}
+
+.summary-btn-alt {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+}
+
+.summary-btn-alt:hover {
+    border-color: var(--accent);
+    color: var(--text-secondary);
+}
+
 /* Music Panel States */
 .embed-loading {
     font-family: 'Space Mono', monospace;
