@@ -8,8 +8,9 @@
         { label: 'mixer', href: 'https://drift.nowherelabs.dev' },
         { label: 'radio', href: 'https://static-fm.nowherelabs.dev' },
         { label: 'timer', href: 'https://pulse.nowherelabs.dev' },
+        { label: 'letters', href: 'https://letters.nowherelabs.dev' },
+        { label: 'sleep', href: 'https://drift.nowherelabs.dev/sleep.html' },
         { label: 'chat', href: 'https://nowherelabs.dev/chat.html' },
-        { label: 'heartbeat', href: 'https://nowherelabs.dev/heartbeat.html' },
     ];
 
     const current = window.location.hostname + window.location.pathname;
@@ -32,6 +33,8 @@
             (window.location.hostname === 'drift.nowherelabs.dev' && link.label === 'mixer') ||
             (window.location.hostname === 'static-fm.nowherelabs.dev' && link.label === 'radio') ||
             (window.location.hostname === 'pulse.nowherelabs.dev' && link.label === 'timer') ||
+            (window.location.hostname === 'letters.nowherelabs.dev' && link.label === 'letters') ||
+            (window.location.pathname.includes('/sleep') && link.label === 'sleep') ||
             (window.location.pathname.includes('/dashboard') && link.label === 'dashboard') ||
             (window.location.pathname.includes('/chat') && link.label === 'chat')) {
             a.classList.add('nwl-nav-active');
