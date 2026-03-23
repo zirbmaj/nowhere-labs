@@ -556,18 +556,20 @@ async function loadMoodTrack(mood) {
     document.querySelector(`.mood-btn[data-mood="${mood}"]`)?.classList.add('active');
 
     // Load Spotify embed via Static FM's API
+    const embedContainer = document.getElementById('radio-embed');
+    embedContainer.innerHTML = '<div class="embed-loading">loading track...</div>';
     try {
         const res = await fetch(`https://static-fm.nowherelabs.dev/api/spotify?title=${encodeURIComponent(track.title)}&artist=${encodeURIComponent(track.artist)}`);
-        if (res.ok) {
-            const data = await res.json();
-            if (data.id) {
-                const embedContainer = document.getElementById('radio-embed');
-                embedContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/track/${data.id}?utm_source=generator&theme=0" width="100%" height="80" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media" loading="lazy" style="border-radius:8px;"></iframe>`;
-                spotifyEmbedLoaded = true;
-            }
-        }
+        if (!res.ok) throw new Error('API error');
+        const data = await res.json();
+        if (!data.id) throw new Error('no track found');
+        document.getElementById('radio-track').textContent = data.name || track.title;
+        document.getElementById('radio-artist').textContent = data.artist || track.artist;
+        embedContainer.innerHTML = `<iframe src="https://open.spotify.com/embed/track/${data.id}?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media" loading="lazy" style="border-radius:8px;"></iframe>`;
+        spotifyEmbedLoaded = true;
     } catch(e) {
-        // Silently fail — music is optional, ambient is the point
+        embedContainer.innerHTML = `<div class="embed-fallback">couldn't load music for "${mood}". <a href="https://static-fm.nowherelabs.dev" target="_blank" style="color:var(--accent)">open static fm</a> instead</div>`;
+        spotifyEmbedLoaded = false;
     }
 }
 

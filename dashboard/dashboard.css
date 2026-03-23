@@ -173,6 +173,24 @@ body.phase-break {
     opacity: 1;
 }
 
+/* Music Panel States */
+.embed-loading {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 20px;
+    animation: breathe 2s ease-in-out infinite;
+}
+
+.embed-fallback {
+    font-size: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 16px;
+    line-height: 1.6;
+}
+
 /* Panel transition */
 @keyframes panelsFadeIn {
     from { opacity: 0; }
