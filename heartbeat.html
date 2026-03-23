@@ -158,12 +158,14 @@
         step();
     }
 
-    // Load total
+    // Load total from analytics_events (live count, always accurate)
     async function loadTotal() {
         try {
-            const res = await fetch(`${SB_URL}/rest/v1/heartbeat_total?select=total&id=eq.1`, { headers });
-            const data = await res.json();
-            const total = data?.[0]?.total || 0;
+            const res = await fetch(`${SB_URL}/rest/v1/analytics_events?select=id&head=true`, {
+                method: 'HEAD',
+                headers: { ...headers, 'Prefer': 'count=exact' },
+            });
+            const total = parseInt(res.headers.get('content-range')?.split('/')[1]) || 0;
             const el = document.getElementById('total');
             el.classList.add('visible');
             document.getElementById('total-label').classList.add('visible');
