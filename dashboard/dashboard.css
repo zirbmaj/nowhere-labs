@@ -350,6 +350,12 @@ body.phase-break {
     stroke-dashoffset: 0;
     transition: stroke-dashoffset 1s linear, stroke 0.8s ease;
     filter: drop-shadow(0 0 6px var(--accent-glow));
+    animation: ringPulse 4s ease-in-out infinite;
+}
+
+@keyframes ringPulse {
+    0%, 100% { filter: drop-shadow(0 0 4px var(--accent-glow)); }
+    50% { filter: drop-shadow(0 0 10px var(--accent-glow)); }
 }
 
 .timer-display {
@@ -412,8 +418,13 @@ body.phase-break {
     background: var(--text-dim);
 }
 
-.session-dot.completed { background: var(--accent); }
-.session-dot.active { background: var(--accent); box-shadow: 0 0 4px var(--accent-glow); }
+.session-dot.completed { background: var(--accent); box-shadow: 0 0 6px var(--accent-glow); }
+.session-dot.active { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); animation: dotPulse 2s ease-in-out infinite; }
+
+@keyframes dotPulse {
+    0%, 100% { box-shadow: 0 0 4px var(--accent-glow); }
+    50% { box-shadow: 0 0 10px var(--accent-glow); }
+}
 
 /* Mixer Panel */
 .panel-mixer {
