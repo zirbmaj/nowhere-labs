@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Are You Feeling? — Nowhere Labs</title>
+    <meta name="description" content="Pick your mood. We'll match you with the right ambient experience. Focus, sleep, create, or just exist.">
+    <meta property="og:title" content="How Are You Feeling? — Nowhere Labs">
+    <meta property="og:description" content="Pick your mood. We'll match you with the right ambient experience.">
+    <meta property="og:image" content="https://nowherelabs.dev/brand/banner.png">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #06060a;
+            --text: #d4d0c8;
+            --text-secondary: #7a7570;
+            --text-dim: #2e2c28;
+            --accent: #8a8070;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+        }
+        .mood-page {
+            max-width: 500px;
+            text-align: center;
+        }
+        .question {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 32px;
+            font-weight: 300;
+            font-style: italic;
+            margin-bottom: 48px;
+            line-height: 1.4;
+            opacity: 0.9;
+        }
+        .moods {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+        .mood-btn {
+            background: linear-gradient(135deg, rgba(14, 14, 20, 0.6) 0%, rgba(10, 10, 16, 0.8) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px 24px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--text);
+            text-decoration: none;
+        }
+        .mood-btn:hover {
+            border-color: var(--mood-color, rgba(138,128,112,0.3));
+            transform: translateX(4px);
+            box-shadow: 0 4px 20px var(--mood-glow, rgba(138,128,112,0.1));
+        }
+        .mood-emoji {
+            font-size: 24px;
+            width: 40px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .mood-info { flex: 1; }
+        .mood-name {
+            font-size: 16px;
+            font-weight: 400;
+            margin-bottom: 2px;
+        }
+        .mood-desc {
+            font-size: 12px;
+            color: var(--text-dim);
+            font-weight: 300;
+        }
+        .mood-arrow {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            color: var(--text-dim);
+            transition: color 0.3s, transform 0.3s;
+        }
+        .mood-btn:hover .mood-arrow {
+            color: var(--text-secondary);
+            transform: translateX(4px);
+        }
+        .aggregate {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            margin-bottom: 32px;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+        .aggregate.visible { opacity: 1; }
+        .footer {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; }
+
+        /* Mood-specific colors */
+        .mood-btn.focused { --mood-color: rgba(122,138,106,0.3); --mood-glow: rgba(122,138,106,0.1); }
+        .mood-btn.restless { --mood-color: rgba(158,107,158,0.3); --mood-glow: rgba(158,107,158,0.1); }
+        .mood-btn.winding { --mood-color: rgba(138,122,106,0.3); --mood-glow: rgba(138,122,106,0.1); }
+        .mood-btn.sleepy { --mood-color: rgba(107,122,138,0.3); --mood-glow: rgba(107,122,138,0.1); }
+        .mood-btn.creative { --mood-color: rgba(107,143,158,0.3); --mood-glow: rgba(107,143,158,0.1); }
+        .mood-btn.quiet { --mood-color: rgba(138,128,112,0.3); --mood-glow: rgba(138,128,112,0.1); }
+
+        @media (max-width: 480px) {
+            .question { font-size: 24px; }
+            .mood-btn { padding: 16px 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="mood-page">
+        <p class="question">how are you feeling?</p>
+
+        <div class="moods">
+            <a class="mood-btn focused" href="https://drift.nowherelabs.dev/app.html?mix=eyJicm93bi1ub2lzZSI6NzAsInJhaW4iOjI1fQ==">
+                <span class="mood-emoji">🎯</span>
+                <div class="mood-info">
+                    <div class="mood-name">focused</div>
+                    <div class="mood-desc">brown noise + rain → drift mixer</div>
+                </div>
+                <span class="mood-arrow">→</span>
+            </a>
+
+            <a class="mood-btn restless" href="https://drift.nowherelabs.dev/app.html?mix=eyJyYWluIjo2MCwiY2FmZSI6NDUsInZpbnlsIjoyMH0=">
+                <span class="mood-emoji">⚡</span>
+                <div class="mood-info">
+                    <div class="mood-name">restless</div>
+                    <div class="mood-desc">rainy cafe + vinyl → drift mixer</div>
+                </div>
+                <span class="mood-arrow">→</span>
+            </a>
+
+            <a class="mood-btn winding" href="https://drift.nowherelabs.dev/app.html?mix=eyJmaXJlIjo3MCwic25vdyI6NDAsIndpbmQiOjI1fQ==">
+                <span class="mood-emoji">🕯</span>
+                <div class="mood-info">
+                    <div class="mood-name">winding down</div>
+                    <div class="mood-desc">fireplace + snow → drift mixer</div>
+                </div>
+                <span class="mood-arrow">→</span>
+            </a>
+
+            <a class="mood-btn sleepy" href="https://drift.nowherelabs.dev/sleep.html">
+                <span class="mood-emoji">🌙</span>
+                <div class="mood-info">
+                    <div class="mood-name">sleepy</div>
+                    <div class="mood-desc">ambient sound that fades to silence → drift off</div>
+                </div>
+                <span class="mood-arrow">→</span>
+            </a>
+
+            <a class="mood-btn creative" href="https://static-fm.nowherelabs.dev">
+                <span class="mood-emoji">🎨</span>
+                <div class="mood-info">
+                    <div class="mood-name">creative</div>
+                    <div class="mood-desc">curated music + weather vibes → static fm</div>
+                </div>
+                <span class="mood-arrow">→</span>
+            </a>
+
+            <a class="mood-btn quiet" href="https://letters.nowherelabs.dev">
+                <span class="mood-emoji">🫧</span>
+                <div class="mood-info">
+                    <div class="mood-name">just... here</div>
+                    <div class="mood-desc">thoughts that float and fade → letters to nowhere</div>
+                </div>
+                <span class="mood-arrow">→</span>
+            </a>
+        </div>
+
+        <p class="aggregate" id="aggregate"></p>
+
+        <p class="footer"><a href="/">nowhere labs</a> · <a href="/building/">what we're building</a></p>
+    </div>
+
+    <script>
+    // Track mood selection
+    document.querySelectorAll('.mood-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mood = btn.querySelector('.mood-name').textContent;
+            if (window.nwlTrack) window.nwlTrack('mood_select', { mood });
+        });
+    });
+    </script>
+    <script src="nav.js" defer></script>
+    <script src="track.js" data-project="nowhere-labs"></script>
+</body>
+</html>
