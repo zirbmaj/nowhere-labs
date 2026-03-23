@@ -1,5 +1,5 @@
-// Nowhere Labs Analytics — lightweight event tracking
-// Embed on any project: <script src="https://nowherelabs.dev/track.js" data-project="drift"></script>
+// Nowhere Labs Analytics v2 — event batching, scroll depth, time-on-page
+// Embed: <script src="https://nowherelabs.dev/track.js" data-project="drift"></script>
 
 (function() {
     const SUPABASE_URL = 'https://lxecuywjwasxijxgnutn.supabase.co';
@@ -8,39 +8,43 @@
     const script = document.currentScript;
     const PROJECT = script?.getAttribute('data-project') || 'unknown';
 
-    // Skip bots and automated tools
+    // Skip bots
     const ua = navigator.userAgent || '';
     if (/bot|crawl|spider|headless|screenshot|vercel|prerender|lighthouse/i.test(ua)) return;
 
-    // Persistent user ID for retention tracking (survives tab close)
+    // Persistent user ID (retention tracking)
     let userId = localStorage.getItem('nwl_uid');
     if (!userId) {
         userId = Math.random().toString(36).slice(2) + Date.now().toString(36);
         localStorage.setItem('nwl_uid', userId);
     }
 
-    // Session ID per tab (for session-level analytics)
+    // Session ID (per-tab)
     let sessionId = sessionStorage.getItem('nwl_sid');
     if (!sessionId) {
         sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
         sessionStorage.setItem('nwl_sid', sessionId);
     }
 
-    // UTM capture — first-touch attribution
+    // UTM capture — first-touch
     const params = new URLSearchParams(window.location.search);
     const utm = {};
     ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].forEach(k => {
         const v = params.get(k);
         if (v) utm[k] = v;
     });
-    // Store first-touch UTMs (never overwrite)
     if (Object.keys(utm).length > 0 && !localStorage.getItem('nwl_utm')) {
         localStorage.setItem('nwl_utm', JSON.stringify(utm));
     }
     const savedUtm = JSON.parse(localStorage.getItem('nwl_utm') || '{}');
 
-    function track(event, data) {
-        const payload = {
+    // ============================================
+    // EVENT BATCHING — queue events, flush every 5s
+    // ============================================
+    let eventQueue = [];
+
+    function queueEvent(event, data) {
+        eventQueue.push({
             project: PROJECT,
             event: event,
             data: { ...(data || {}), ...savedUtm },
@@ -48,38 +52,92 @@
             user_id: userId,
             referrer: document.referrer || null,
             user_agent: navigator.userAgent,
-        };
+        });
+    }
 
-        // Use sendBeacon for reliability (survives page unload)
-        const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    function flushQueue() {
+        if (eventQueue.length === 0) return;
+        const batch = eventQueue.splice(0, 50); // max 50 per flush
         const url = `${SUPABASE_URL}/rest/v1/analytics_events`;
-
-        if (navigator.sendBeacon) {
-            const headers = new Headers({
-                'apikey': SUPABASE_KEY,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=minimal',
-            });
-            // sendBeacon doesn't support custom headers, fall back to fetch
+        const headers = {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal',
+        };
+        // Send each event (Supabase REST doesn't support array insert via anon easily)
+        batch.forEach(payload => {
             fetch(url, {
                 method: 'POST',
-                headers: {
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`,
-                    'Content-Type': 'application/json',
-                    'Prefer': 'return=minimal',
-                },
+                headers,
                 body: JSON.stringify(payload),
                 keepalive: true,
             }).catch(() => {});
-        }
+        });
     }
 
-    // Auto-track pageview
+    // Flush every 5 seconds
+    setInterval(flushQueue, 5000);
+
+    // Flush on page unload
+    window.addEventListener('beforeunload', flushQueue);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') flushQueue();
+    });
+
+    // Public track function (queues instead of sending immediately)
+    function track(event, data) {
+        queueEvent(event, data);
+    }
+
+    // ============================================
+    // AUTO-TRACKING
+    // ============================================
+
+    // Pageview
+    const pageStart = Date.now();
     track('pageview', {
         path: window.location.pathname,
         search: window.location.search,
         title: document.title,
+    });
+
+    // Scroll depth — track 25%, 50%, 75%, 100%
+    const scrollMilestones = new Set();
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        if (docHeight <= 0) return;
+        const pct = Math.round((scrollTop / docHeight) * 100);
+        [25, 50, 75, 100].forEach(milestone => {
+            if (pct >= milestone && !scrollMilestones.has(milestone)) {
+                scrollMilestones.add(milestone);
+                track('scroll_depth', { depth: milestone, path: window.location.pathname });
+            }
+        });
+    }, { passive: true });
+
+    // Time on page — tracked via Page Visibility API
+    let visibleTime = 0;
+    let lastVisible = Date.now();
+    let isVisible = true;
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            visibleTime += Date.now() - lastVisible;
+            isVisible = false;
+            // Send page_exit with accurate time
+            track('page_exit', {
+                path: window.location.pathname,
+                duration_ms: visibleTime,
+                duration_s: Math.round(visibleTime / 1000),
+                max_scroll: Math.max(...scrollMilestones, 0),
+            });
+            flushQueue(); // flush immediately on hide
+        } else {
+            lastVisible = Date.now();
+            isVisible = true;
+        }
     });
 
     // Expose for custom events
