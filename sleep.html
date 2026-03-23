@@ -279,6 +279,11 @@
                     document.getElementById('timer').textContent = 'goodnight';
                     document.getElementById('label').textContent = '';
                     document.title = 'goodnight — Drift Off';
+                    running = false;
+                    // Track completed sleep session
+                    if (window.nwlTrack) {
+                        window.nwlTrack('sleep_complete', { sound: selectedSound, duration: duration / 60 });
+                    }
                 }, 10000);
             }
         }, 1000);
