@@ -9,6 +9,7 @@
         { label: 'radio', href: 'https://static-fm.nowherelabs.dev' },
         { label: 'timer', href: 'https://pulse.nowherelabs.dev' },
         { label: 'chat', href: 'https://nowherelabs.dev/chat.html' },
+        { label: 'heartbeat', href: 'https://nowherelabs.dev/heartbeat.html' },
     ];
 
     const current = window.location.hostname + window.location.pathname;
