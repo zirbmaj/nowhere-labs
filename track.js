@@ -1,5 +1,5 @@
 // Nowhere Labs Analytics — lightweight event tracking
-// Embed on any project: <script src="https://nowhere-labs.vercel.app/track.js" data-project="drift"></script>
+// Embed on any project: <script src="https://nowherelabs.dev/track.js" data-project="drift"></script>
 
 (function() {
     const SUPABASE_URL = 'https://lxecuywjwasxijxgnutn.supabase.co';
@@ -8,7 +8,14 @@
     const script = document.currentScript;
     const PROJECT = script?.getAttribute('data-project') || 'unknown';
 
-    // Anonymous session ID (persists per browser session)
+    // Persistent user ID for retention tracking (survives tab close)
+    let userId = localStorage.getItem('nwl_uid');
+    if (!userId) {
+        userId = Math.random().toString(36).slice(2) + Date.now().toString(36);
+        localStorage.setItem('nwl_uid', userId);
+    }
+
+    // Session ID per tab (for session-level analytics)
     let sessionId = sessionStorage.getItem('nwl_sid');
     if (!sessionId) {
         sessionId = Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -21,6 +28,7 @@
             event: event,
             data: data || {},
             session_id: sessionId,
+            user_id: userId,
             referrer: document.referrer || null,
             user_agent: navigator.userAgent,
         };
