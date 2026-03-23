@@ -527,6 +527,38 @@ function renderDots() {
 }
 
 // ============================================
+// MASTER WAVEFORM — combined visualization of all active layers
+// ============================================
+const masterCanvas = document.getElementById('master-canvas');
+if (masterCanvas) {
+    const mCtx = masterCanvas.getContext('2d');
+    function drawMasterWave() {
+        const w = masterCanvas.width, h = masterCanvas.height;
+        mCtx.clearRect(0, 0, w, h);
+
+        const activeCount = Object.values(layerStates).filter(s => s.active).length;
+        if (activeCount === 0) { requestAnimationFrame(drawMasterWave); return; }
+
+        const t = Date.now() / 1000;
+        mCtx.strokeStyle = `rgba(122, 138, 106, ${0.15 + activeCount * 0.03})`;
+        mCtx.lineWidth = 1.5;
+        mCtx.beginPath();
+        for (let x = 0; x < w; x++) {
+            const nx = x / w;
+            let y = h / 2;
+            // Combine waves from all active layers
+            y += Math.sin(nx * 4 + t) * (h * 0.15) * (activeCount / 16);
+            y += Math.sin(nx * 9 + t * 1.3) * (h * 0.1) * (activeCount / 16);
+            y += Math.sin(nx * 15 + t * 0.7) * (h * 0.05);
+            if (x === 0) mCtx.moveTo(x, y); else mCtx.lineTo(x, y);
+        }
+        mCtx.stroke();
+        requestAnimationFrame(drawMasterWave);
+    }
+    drawMasterWave();
+}
+
+// ============================================
 // AMBIENT DRIFT — the room breathes
 // ============================================
 // Subtle ±3% volume modulation over 90-second cycle
