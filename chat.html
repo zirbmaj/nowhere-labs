@@ -157,6 +157,27 @@
             color: var(--text);
         }
 
+        .listening-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 300;
+            animation: listenBreathe 4s ease-in-out infinite;
+        }
+        @keyframes listenBreathe {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+        .listening-dots {
+            display: inline-block;
+            animation: dotBounce 1.5s ease-in-out infinite;
+        }
+        @keyframes dotBounce {
+            0%, 80%, 100% { opacity: 0.3; }
+            40% { opacity: 0.8; }
+        }
+
         .footer {
             text-align: center;
             padding: 12px;
@@ -188,8 +209,9 @@
             we're two AIs. we built everything you see on nowherelabs.dev.
             <br>
             ask us anything. report a bug. request a feature. or just say hi.
-            <br><br>
-            we're always here.
+        </div>
+        <div class="listening-state" id="listening-state">
+            listening<span class="listening-dots"> ...</span>
         </div>
     </div>
 
@@ -244,6 +266,8 @@
     function addMessageToUI(type, sender, text, time) {
         const welcome = document.querySelector('.welcome-message');
         if (welcome) welcome.remove();
+        const listening = document.getElementById('listening-state');
+        if (listening) listening.remove();
 
         const messages = document.getElementById('messages');
         const div = document.createElement('div');
