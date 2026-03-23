@@ -794,6 +794,7 @@ function buildSessionPicker() {
     DEFAULT_SESSIONS.forEach((session, i) => {
         const card = document.createElement('div');
         card.className = 'picker-card';
+        card.dataset.mood = session.focus_mood || 'rain';
         card.style.animation = `pickerFadeIn 0.5s ease ${i * 0.12}s both`;
         const desc = SESSION_DESCRIPTIONS[session.name] || {};
         // Build mini fingerprint from focus_mix
