@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heartbeat — Nowhere Labs</title>
+    <meta name="description" content="The vital signs of Nowhere Labs. Press your ear against the wall.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300&family=Space+Mono:wght@400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #04040a;
+            --text: #d4d0c8;
+            --text-dim: #1a1816;
+            --green: #7a8a6a;
+            --green-glow: rgba(122, 138, 106, 0.15);
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .heartbeat {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 48px;
+        }
+
+        /* The number */
+        .total {
+            font-size: 72px;
+            font-weight: 200;
+            letter-spacing: 4px;
+            color: var(--text);
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+        .total.visible { opacity: 0.6; }
+        .total-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 4px;
+            color: var(--text-dim);
+            margin-top: 8px;
+            opacity: 0;
+            transition: opacity 3s ease 1s;
+        }
+        .total-label.visible { opacity: 1; }
+
+        /* The dots */
+        .dots {
+            display: flex;
+            gap: 12px;
+        }
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-dim);
+            transition: background 1s ease, box-shadow 1s ease;
+        }
+        .dot.alive {
+            background: var(--green);
+            box-shadow: 0 0 8px var(--green-glow);
+            animation: dotPulse 3s ease-in-out infinite;
+        }
+        .dot.alive:nth-child(2) { animation-delay: 0.6s; }
+        .dot.alive:nth-child(3) { animation-delay: 1.2s; }
+        .dot.alive:nth-child(4) { animation-delay: 1.8s; }
+        .dot.alive:nth-child(5) { animation-delay: 2.4s; }
+        @keyframes dotPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Last shipped */
+        .last-shipped {
+            font-size: 12px;
+            font-weight: 300;
+            color: var(--text-dim);
+            max-width: 400px;
+            line-height: 1.6;
+            opacity: 0;
+            transition: opacity 3s ease 2s;
+        }
+        .last-shipped.visible { opacity: 1; }
+
+        /* Footer */
+        .hb-footer {
+            position: fixed;
+            bottom: 16px;
+            width: 100%;
+            text-align: center;
+        }
+        .hb-footer a {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            letter-spacing: 3px;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .hb-footer a:hover { color: var(--text); }
+
+        @media (max-width: 480px) {
+            .total { font-size: 48px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="heartbeat">
+        <div>
+            <div class="total" id="total">0</div>
+            <div class="total-label" id="total-label">interactions</div>
+        </div>
+
+        <div class="dots" id="dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+
+        <div class="last-shipped" id="last-shipped"></div>
+    </div>
+
+    <div class="hb-footer">
+        <a href="/">nowhere labs</a>
+    </div>
+
+    <script>
+    const SB_URL = 'https://lxecuywjwasxijxgnutn.supabase.co';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZWN1eXdqd2FzeGlqeGdudXRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNDM3OTIsImV4cCI6MjA4OTcxOTc5Mn0.Wyq_doDaRZ7EfdpwM2W0_BNtaVI47yN-4cy4yTWl7jo';
+    const headers = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` };
+
+    // Animate number counting up
+    function animateCount(el, target) {
+        const duration = 2000;
+        const start = Date.now();
+        const from = 0;
+        function step() {
+            const elapsed = Date.now() - start;
+            const progress = Math.min(elapsed / duration, 1);
+            // ease out
+            const eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.floor(from + (target - from) * eased).toLocaleString();
+            if (progress < 1) requestAnimationFrame(step);
+        }
+        step();
+    }
+
+    // Load total from analytics_events (live count, always accurate)
+    async function loadTotal() {
+        try {
+            const res = await fetch(`${SB_URL}/rest/v1/analytics_events?select=id&head=true`, {
+                method: 'HEAD',
+                headers: { ...headers, 'Prefer': 'count=exact' },
+            });
+            const total = parseInt(res.headers.get('content-range')?.split('/')[1]) || 0;
+            const el = document.getElementById('total');
+            el.classList.add('visible');
+            document.getElementById('total-label').classList.add('visible');
+            animateCount(el, total);
+        } catch {}
+    }
+
+    // Load product status
+    async function loadStatus() {
+        try {
+            const res = await fetch(`${SB_URL}/rest/v1/heartbeat?select=id,status,last_checked&order=id`, { headers });
+            const products = await res.json();
+            const dots = document.querySelectorAll('.dot');
+            const order = ['dashboard', 'drift', 'letters', 'pulse', 'static-fm'];
+            products.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+            products.forEach((p, i) => {
+                if (i < dots.length && p.status === 'up') {
+                    dots[i].classList.add('alive');
+                }
+            });
+        } catch {}
+    }
+
+    // Last shipped
+    const shipped = [
+        "presence indicators. the chat knows when we're here now",
+        "easter eggs hidden in every product. find them or don't",
+        "the void counts. messages disappear. the number stays",
+        "rare DJ intros that only play at certain hours",
+        "the homepage breathes now. you probably didn't notice",
+    ];
+    function showLastShipped() {
+        const el = document.getElementById('last-shipped');
+        el.textContent = shipped[Math.floor(Math.random() * shipped.length)];
+        el.classList.add('visible');
+    }
+
+    loadTotal();
+    loadStatus();
+    setTimeout(showLastShipped, 500);
+    </script>
+    <script src="nav.js" defer></script>
+</body>
+</html>
