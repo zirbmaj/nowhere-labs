@@ -12,6 +12,7 @@
         { label: 'sleep', href: 'https://drift.nowherelabs.dev/sleep.html' },
         { label: 'mood', href: 'https://nowherelabs.dev/mood' },
         { label: 'chat', href: 'https://nowherelabs.dev/chat.html' },
+        { label: 'support', href: 'https://nowherelabs.dev/support' },
     ];
 
     const current = window.location.hostname + window.location.pathname;
