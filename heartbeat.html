@@ -158,19 +158,20 @@
         step();
     }
 
-    // Load total from analytics_events (live count, always accurate)
+    // Load total from analytics_events via RPC
     async function loadTotal() {
         try {
-            const res = await fetch(`${SB_URL}/rest/v1/analytics_events?select=id&head=true`, {
-                method: 'HEAD',
-                headers: { ...headers, 'Prefer': 'count=exact' },
+            const res = await fetch(`${SB_URL}/rest/v1/rpc/get_event_count`, {
+                method: 'POST',
+                headers: { ...headers, 'Content-Type': 'application/json' },
+                body: '{}',
             });
-            const total = parseInt(res.headers.get('content-range')?.split('/')[1]) || 0;
+            const total = await res.json();
             const el = document.getElementById('total');
             el.classList.add('visible');
             document.getElementById('total-label').classList.add('visible');
-            animateCount(el, total);
-        } catch {}
+            animateCount(el, typeof total === 'number' ? total : 0);
+        } catch(e) { console.warn('heartbeat total error:', e); }
     }
 
     // Load product status
@@ -186,7 +187,7 @@
                     dots[i].classList.add('alive');
                 }
             });
-        } catch {}
+        } catch(e) { console.warn('heartbeat status error:', e); }
     }
 
     // Last shipped
