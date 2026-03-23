@@ -157,7 +157,26 @@ function buildMixerPanel() {
             if (val === 0 && waveFrame) { cancelAnimationFrame(waveFrame); waveFrame = null; const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); }
         });
 
-        // Waveform animation
+        // Per-layer waveform patterns
+        const WAVE_FN = {
+            'rain': (x,t) => Math.sin(x*5+t)*0.5 + Math.sin(x*13+t*2.1)*0.3,
+            'heavy-rain': (x,t) => Math.sin(x*4+t*1.2)*0.6 + Math.sin(x*17+t*2.5)*0.3 + Math.random()*0.1,
+            'thunder': (x,t) => Math.sin(x*2+t*0.5)*0.7 + Math.sin(x*9+t*3)*0.2,
+            'fire': (x,t) => Math.sin(x*8+t*1.5)*0.4 + Math.sin(x*3+t*0.8)*0.3 + (Math.random()-0.5)*0.2,
+            'cafe': (x,t) => Math.sin(x*6+t*0.7)*0.3 + Math.sin(x*11+t*1.3)*0.2 + (Math.random()-0.5)*0.15,
+            'birds': (x,t) => Math.sin(x*12+t*3)*0.4 * Math.sin(t*2+x)*0.5,
+            'waves': (x,t) => Math.sin(x*3+t*0.6)*0.6 + Math.sin(x*7+t*0.3)*0.3,
+            'crickets': (x,t) => Math.sin(x*20+t*4)*0.3 * Math.sin(t*1.5)*0.5,
+            'train': (x,t) => Math.sin(x*4+t*2)*0.4 + Math.sin(x*8+t*4)*0.2,
+            'leaves': (x,t) => Math.sin(x*7+t*0.9)*0.3 + Math.sin(x*15+t*1.1)*0.2,
+            'vinyl': (x,t) => Math.sin(x*10+t)*0.2 + (Math.random()-0.5)*0.3,
+            'wind': (x,t) => Math.sin(x*3+t*0.4)*0.5 + Math.sin(x*9+t*0.7)*0.3,
+            'snow': (x,t) => Math.sin(x*6+t*0.3)*0.3 + Math.sin(x*14+t*0.5)*0.15,
+            'brown-noise': (x,t) => Math.sin(x*2+t*0.5)*0.6 + Math.sin(x*5+t*0.8)*0.3,
+            'white-noise': (x,t) => (Math.random()-0.5)*0.7,
+            'drone': (x,t) => Math.sin(x*2+t*0.3)*0.7 + Math.sin(x*4+t*0.15)*0.2,
+        };
+        const waveFn = WAVE_FN[layer.id] || ((x,t) => Math.sin(x*6+t)*0.5);
         const canvas = div.querySelector('.mix-wave');
         let waveFrame;
         function drawWave() {
@@ -172,7 +191,7 @@ function buildMixerPanel() {
             const t = Date.now() / 1000;
             for (let x = 0; x < w; x++) {
                 const nx = x / w;
-                const y = h/2 + Math.sin(nx * 6 + t) * (h * 0.3) * vol + Math.sin(nx * 14 + t * 1.7) * (h * 0.15) * vol;
+                const y = h/2 + waveFn(nx * 6.28, t) * (h * 0.35) * vol;
                 if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
             }
             ctx.stroke();
