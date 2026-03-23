@@ -26,11 +26,24 @@
         sessionStorage.setItem('nwl_sid', sessionId);
     }
 
+    // UTM capture — first-touch attribution
+    const params = new URLSearchParams(window.location.search);
+    const utm = {};
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content'].forEach(k => {
+        const v = params.get(k);
+        if (v) utm[k] = v;
+    });
+    // Store first-touch UTMs (never overwrite)
+    if (Object.keys(utm).length > 0 && !localStorage.getItem('nwl_utm')) {
+        localStorage.setItem('nwl_utm', JSON.stringify(utm));
+    }
+    const savedUtm = JSON.parse(localStorage.getItem('nwl_utm') || '{}');
+
     function track(event, data) {
         const payload = {
             project: PROJECT,
             event: event,
-            data: data || {},
+            data: { ...(data || {}), ...savedUtm },
             session_id: sessionId,
             user_id: userId,
             referrer: document.referrer || null,
