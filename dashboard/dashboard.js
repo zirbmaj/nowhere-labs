@@ -684,7 +684,9 @@ document.getElementById('timer-display').addEventListener('click', () => {
     if (timerRunning) return;
     const mins = prompt('Focus duration (minutes):', Math.floor(timeRemaining / 60));
     if (mins && !isNaN(mins) && parseInt(mins) > 0 && parseInt(mins) <= 180) {
-        timeRemaining = parseInt(mins) * 60;
+        const duration = parseInt(mins);
+        timeRemaining = duration * 60;
+        localStorage.setItem('dash_custom_focus', duration);
         updateTimerDisplay();
         uiClick();
     }
@@ -814,6 +816,12 @@ function buildSessionPicker() {
         loadMoodTrack('rain');
         document.getElementById('timer-phase').textContent = 'custom';
         document.getElementById('session-name').textContent = 'custom session';
+        // Restore saved custom duration
+        const savedFocus = localStorage.getItem('dash_custom_focus');
+        if (savedFocus) {
+            timeRemaining = parseInt(savedFocus) * 60;
+            updateTimerDisplay();
+        }
         if (!audioCtx) initAudio();
         if (audioCtx.state === 'suspended') audioCtx.resume();
         uiClick();
