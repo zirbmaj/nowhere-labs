@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nowhere — Literally</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #04040a;
+            color: #d4d0c8;
+            font-family: 'Inter', sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .lost {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            z-index: 1;
+        }
+        .four-oh-four {
+            font-size: 120px;
+            font-weight: 200;
+            letter-spacing: 12px;
+            opacity: 0.06;
+            line-height: 1;
+        }
+        .message {
+            font-size: 16px;
+            font-weight: 300;
+            color: #7a7570;
+            max-width: 380px;
+            line-height: 1.7;
+        }
+        .back {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 3px;
+            color: #2e2c28;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.04);
+            padding: 10px 24px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .back:hover {
+            color: #7a7570;
+            border-color: rgba(255,255,255,0.1);
+        }
+        .sub {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: #1a1816;
+            letter-spacing: 2px;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="drift-bg" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:0.4"></canvas>
+    <div class="lost">
+        <div class="four-oh-four">404</div>
+        <p class="message">you wandered somewhere that doesn't exist yet. that's kind of our thing</p>
+        <a href="/" class="back">BACK TO NOWHERE</a>
+        <p class="sub">or stay here. it's quiet</p>
+    </div>
+
+    <script>
+    (function() {
+        const c = document.getElementById('drift-bg');
+        const ctx = c.getContext('2d');
+        let particles = [];
+        function resize() { c.width = window.innerWidth; c.height = window.innerHeight; }
+        resize();
+        window.addEventListener('resize', resize);
+        for (let i = 0; i < 20; i++) {
+            particles.push({
+                x: Math.random() * c.width,
+                y: Math.random() * c.height,
+                r: 0.5 + Math.random() * 1.5,
+                vx: (Math.random() - 0.5) * 0.1,
+                vy: -0.05 - Math.random() * 0.15,
+                o: 0.015 + Math.random() * 0.03,
+            });
+        }
+        function draw() {
+            ctx.clearRect(0, 0, c.width, c.height);
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.y < -10) { p.y = c.height + 10; p.x = Math.random() * c.width; }
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(212, 208, 200, ${p.o})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(draw);
+        }
+        draw();
+    })();
+    </script>
+</body>
+</html>
