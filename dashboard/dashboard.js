@@ -745,6 +745,7 @@ function buildSessionPicker() {
     DEFAULT_SESSIONS.forEach((session, i) => {
         const card = document.createElement('div');
         card.className = 'picker-card';
+        card.style.animation = `pickerFadeIn 0.5s ease ${i * 0.12}s both`;
         const desc = SESSION_DESCRIPTIONS[session.name] || {};
         card.innerHTML = `
             <div class="picker-card-name">${session.name}</div>
@@ -783,6 +784,7 @@ function buildSessionPicker() {
     // "Start empty" card — build your own session
     const emptyCard = document.createElement('div');
     emptyCard.className = 'picker-card picker-card-empty';
+    emptyCard.style.animation = `pickerFadeIn 0.5s ease ${DEFAULT_SESSIONS.length * 0.12}s both`;
     emptyCard.innerHTML = `
         <div class="picker-card-name">start empty</div>
         <div class="picker-card-desc">build your own. all sliders at zero.</div>
