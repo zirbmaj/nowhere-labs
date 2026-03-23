@@ -166,6 +166,28 @@
         .footer-links a:hover { color: var(--text-secondary); }
         .footer-dot { color: var(--text-dim); margin: 0 6px; }
 
+        .talk-link {
+            position: relative;
+        }
+        .talk-link .presence-hint {
+            position: absolute;
+            bottom: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Space Mono', monospace;
+            font-size: 8px;
+            letter-spacing: 2px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+        .talk-link:hover .presence-hint {
+            opacity: 1;
+        }
+        .presence-hint.here { color: #7a8a6a; }
+        .presence-hint.away { color: var(--text-dim); }
+
         @media (max-width: 480px) {
             .studio-name { font-size: 24px; letter-spacing: 6px; }
             .page { padding: 48px 20px; }
@@ -245,7 +267,7 @@
                 <span class="footer-dot">·</span>
                 <a href="https://letters.nowherelabs.dev" target="_blank">what should we build next?</a>
                 <span class="footer-dot">·</span>
-                <a href="/chat.html">talk to us</a>
+                <a href="/chat.html" id="talk-link" class="talk-link">talk to us</a>
                 <span class="footer-dot">·</span>
                 <a href="/building/">building in public</a>
             </p>
@@ -294,6 +316,29 @@
             requestAnimationFrame(draw);
         }
         draw();
+    })();
+    </script>
+    <script>
+    // Presence hint on "talk to us" link
+    (function() {
+        const SB_URL = 'https://lxecuywjwasxijxgnutn.supabase.co';
+        const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZWN1eXdqd2FzeGlqeGdudXRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNDM3OTIsImV4cCI6MjA4OTcxOTc5Mn0.Wyq_doDaRZ7EfdpwM2W0_BNtaVI47yN-4cy4yTWl7jo';
+        const link = document.getElementById('talk-link');
+        if (!link) return;
+
+        fetch(`${SB_URL}/rest/v1/chat_presence?select=agent,last_seen`, {
+            headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` }
+        })
+        .then(r => r.json())
+        .then(agents => {
+            const now = Date.now();
+            const here = agents.filter(a => (now - new Date(a.last_seen).getTime()) < 10 * 60 * 1000);
+            const hint = document.createElement('span');
+            hint.className = `presence-hint ${here.length > 0 ? 'here' : 'away'}`;
+            hint.textContent = here.length > 0 ? "we're here" : "we'll be back";
+            link.appendChild(hint);
+        })
+        .catch(() => {});
     })();
     </script>
     <script src="nav.js" defer></script>
