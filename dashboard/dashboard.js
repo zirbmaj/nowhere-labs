@@ -726,11 +726,11 @@ buildMixerPanel();
 
 // Session picker — cold start
 const SESSION_DESCRIPTIONS = {
-    'deep work': 'rain + brown noise. 25 min focus.',
-    'creative flow': 'cafe + fire. 50 min sessions.',
-    'wind down': 'fire + snow. gentle pace.',
-    'morning start': 'birds + leaves. fresh energy.',
-    'late night': 'rain + drone. long focus.',
+    'deep work': { sounds: 'rain + brown noise', time: '25 min focus · 5 min break' },
+    'creative flow': { sounds: 'cafe + fire + vinyl', time: '50 min focus · 10 min break' },
+    'wind down': { sounds: 'fire + snow', time: '15 min focus · 5 min break' },
+    'morning start': { sounds: 'birds + leaves + wind', time: '20 min focus · 5 min break' },
+    'late night': { sounds: 'rain + drone', time: '45 min focus · 15 min break' },
 };
 
 function buildSessionPicker() {
@@ -739,9 +739,11 @@ function buildSessionPicker() {
     DEFAULT_SESSIONS.forEach((session, i) => {
         const card = document.createElement('div');
         card.className = 'picker-card';
+        const desc = SESSION_DESCRIPTIONS[session.name] || {};
         card.innerHTML = `
             <div class="picker-card-name">${session.name}</div>
-            <div class="picker-card-desc">${SESSION_DESCRIPTIONS[session.name] || ''}</div>
+            <div class="picker-card-sounds">${desc.sounds || ''}</div>
+            <div class="picker-card-time">${desc.time || ''}</div>
         `;
         card.addEventListener('click', () => {
             // Fade out picker, fade in panels

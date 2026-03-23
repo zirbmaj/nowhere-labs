@@ -188,6 +188,19 @@ body.phase-break {
     line-height: 1.5;
 }
 
+.picker-card-sounds {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.picker-card-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+}
+
 .picker-card-empty {
     border-style: dashed;
     opacity: 0.6;
