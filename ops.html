@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nowhere Labs — Ops</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg: #06060a; --card: #0c0c14; --text: #d4d0c8; --dim: #2e2c28; --accent: #7a8a6a; --border: rgba(255,255,255,0.04); --red: #c47a7a; --green: #7a8a6a; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 24px; }
+        h1 { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 6px; color: var(--dim); margin-bottom: 8px; }
+        .subtitle { font-size: 10px; color: var(--dim); margin-bottom: 32px; font-family: 'Space Mono', monospace; letter-spacing: 2px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .grid-wide { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+        .card-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 3px; color: var(--dim); margin-bottom: 12px; }
+        .card-value { font-size: 32px; font-weight: 200; margin-bottom: 4px; }
+        .card-sub { font-size: 11px; color: var(--dim); }
+        .status-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+        .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .dot.up { background: var(--green); }
+        .dot.down { background: var(--red); }
+        .product-name { color: var(--dim); width: 100px; font-family: 'Space Mono', monospace; font-size: 10px; flex-shrink: 0; }
+        .response-time { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--dim); }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--dim); text-align: left; padding: 8px 0; border-bottom: 1px solid var(--border); }
+        td { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.02); }
+        td.num { font-family: 'Space Mono', monospace; text-align: right; }
+        .bar-container { height: 16px; background: rgba(255,255,255,0.02); border-radius: 3px; overflow: hidden; }
+        .bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.5s ease; }
+        .section-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 4px; color: var(--dim); margin: 32px 0 16px; }
+        .refresh { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--dim); letter-spacing: 2px; margin-top: 24px; }
+        .live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 6px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .funnel-step { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .funnel-label { width: 120px; font-size: 11px; color: var(--dim); font-family: 'Space Mono', monospace; font-size: 10px; }
+        .funnel-bar { flex: 1; }
+        .funnel-count { font-family: 'Space Mono', monospace; font-size: 11px; width: 60px; text-align: right; }
+        .funnel-pct { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--dim); width: 50px; text-align: right; }
+        .event-row { font-size: 11px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.02); display: flex; gap: 8px; }
+        .event-time { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--dim); width: 60px; flex-shrink: 0; }
+        .event-type { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent); width: 120px; flex-shrink: 0; }
+        .event-detail { font-size: 10px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .hour-row { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+        .hour-label { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--dim); width: 36px; text-align: right; }
+        .hour-bar { flex: 1; }
+        .hour-count { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--dim); width: 40px; text-align: right; }
+    </style>
+</head>
+<body>
+    <h1>NOWHERE LABS — OPS</h1>
+    <p class="subtitle"><span class="live-dot"></span>LAUNCH DAY COMMAND CENTER</p>
+
+    <!-- Row 1: Key metrics -->
+    <div class="grid">
+        <div class="card">
+            <div class="card-title">EVENTS TODAY</div>
+            <div class="card-value" id="events-today">...</div>
+            <div class="card-sub" id="events-today-sub">loading</div>
+        </div>
+        <div class="card">
+            <div class="card-title">UNIQUE VISITORS</div>
+            <div class="card-value" id="unique-visitors">...</div>
+            <div class="card-sub">distinct user IDs today</div>
+        </div>
+        <div class="card">
+            <div class="card-title">ACTIVE SESSIONS</div>
+            <div class="card-value" id="active-sessions">...</div>
+            <div class="card-sub">sessions in last 15 min</div>
+        </div>
+        <div class="card">
+            <div class="card-title">EVENTS / MIN</div>
+            <div class="card-value" id="events-per-min">...</div>
+            <div class="card-sub">rolling 5 min average</div>
+        </div>
+    </div>
+
+    <!-- Row 2: Uptime + Funnel -->
+    <div class="grid-wide">
+        <div class="card">
+            <div class="card-title">PRODUCT STATUS</div>
+            <div id="heartbeat">loading...</div>
+        </div>
+        <div class="card">
+            <div class="card-title">DRIFT FUNNEL</div>
+            <div id="funnel">loading...</div>
+        </div>
+    </div>
+
+    <!-- Row 3: Traffic sources + Hourly -->
+    <div class="section-title">TRAFFIC</div>
+    <div class="grid-wide">
+        <div class="card">
+            <div class="card-title">REFERRERS</div>
+            <div id="referrers">loading...</div>
+        </div>
+        <div class="card">
+            <div class="card-title">UTM SOURCES</div>
+            <div id="utm-sources">loading...</div>
+        </div>
+    </div>
+
+    <div class="grid-wide">
+        <div class="card">
+            <div class="card-title">HOURLY PATTERN (CST)</div>
+            <div id="hourly">loading...</div>
+        </div>
+        <div class="card">
+            <div class="card-title">EVENTS BY PRODUCT</div>
+            <div id="by-product">loading...</div>
+        </div>
+    </div>
+
+    <!-- Row 4: Popular layers + Live feed -->
+    <div class="section-title">ENGAGEMENT</div>
+    <div class="grid-wide">
+        <div class="card">
+            <div class="card-title">TOP LAYERS</div>
+            <div id="top-layers">loading...</div>
+        </div>
+        <div class="card">
+            <div class="card-title">LIVE EVENTS</div>
+            <div id="live-feed">loading...</div>
+        </div>
+    </div>
+
+    <p class="refresh" id="refresh">last updated: loading...</p>
+
+    <script>
+    const SB = 'https://lxecuywjwasxijxgnutn.supabase.co';
+    const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZWN1eXdqd2FzeGlqeGdudXRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNDM3OTIsImV4cCI6MjA4OTcxOTc5Mn0.Wyq_doDaRZ7EfdpwM2W0_BNtaVI47yN-4cy4yTWl7jo';
+    const H = { 'apikey': KEY, 'Authorization': `Bearer ${KEY}`, 'Content-Type': 'application/json' };
+
+    async function rpc(name, params = {}) {
+        const r = await fetch(`${SB}/rest/v1/rpc/${name}`, { method: 'POST', headers: H, body: JSON.stringify(params) });
+        return r.json();
+    }
+    async function query(table, params = '') {
+        const r = await fetch(`${SB}/rest/v1/${table}?${params}`, { headers: H });
+        return r.json();
+    }
+
+    function timeAgo(ts) {
+        const m = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+        if (m < 1) return 'now';
+        if (m < 60) return m + 'm';
+        return Math.round(m / 60) + 'h';
+    }
+
+    function renderBar(pct) {
+        return `<div class="bar-container"><div class="bar" style="width:${Math.min(pct, 100)}%"></div></div>`;
+    }
+
+    async function loadHeartbeat() {
+        const hb = await query('heartbeat', 'select=id,status,response_ms,last_checked&order=id');
+        document.getElementById('heartbeat').innerHTML = hb.map(p =>
+            `<div class="status-row"><span class="dot ${p.status}"></span><span class="product-name">${p.id}</span><span class="response-time">${p.response_ms}ms · ${timeAgo(p.last_checked)}</span></div>`
+        ).join('');
+    }
+
+    async function loadEventsToday() {
+        // Get today's events using the analytics_events table
+        const today = new Date().toISOString().split('T')[0];
+        const events = await query('analytics_events', `select=id&created_at=gte.${today}T00:00:00&limit=1&order=id.desc`, true);
+
+        // Use RPC for total count
+        const total = await rpc('get_event_count');
+        document.getElementById('events-today').textContent = total.toLocaleString();
+        document.getElementById('events-today-sub').textContent = 'all time, bot-filtered';
+    }
+
+    async function loadFunnel() {
+        // Drift funnel: landing → app → interaction
+        const today = new Date().toISOString().split('T')[0];
+        const allEvents = await query('analytics_events',
+            `select=event,data&project=eq.drift&created_at=gte.${today}T00:00:00&limit=5000`
+        );
+
+        const landing = allEvents.filter(e => e.event === 'pageview' && e.data?.page === '/').length;
+        const app = allEvents.filter(e => e.event === 'pageview' && (e.data?.page === '/app.html' || e.data?.page === '/app')).length;
+        const interact = allEvents.filter(e => e.event === 'layer_activate').length;
+        const max = Math.max(landing, 1);
+
+        const steps = [
+            { label: 'landing', count: landing, pct: 100 },
+            { label: 'app', count: app, pct: Math.round(app / max * 100) },
+            { label: 'interaction', count: interact, pct: Math.round(interact / max * 100) },
+        ];
+
+        document.getElementById('funnel').innerHTML = steps.map(s =>
+            `<div class="funnel-step">
+                <span class="funnel-label">${s.label}</span>
+                <div class="funnel-bar">${renderBar(s.pct)}</div>
+                <span class="funnel-count">${s.count}</span>
+                <span class="funnel-pct">${s.pct}%</span>
+            </div>`
+        ).join('');
+    }
+
+    async function loadUniqueVisitors() {
+        const today = new Date().toISOString().split('T')[0];
+        const events = await query('analytics_events',
+            `select=user_id&created_at=gte.${today}T00:00:00&user_id=not.is.null&limit=10000`
+        );
+        const unique = new Set(events.map(e => e.user_id)).size;
+        document.getElementById('unique-visitors').textContent = unique.toLocaleString();
+    }
+
+    async function loadActiveSessions() {
+        const fifteenAgo = new Date(Date.now() - 15 * 60000).toISOString();
+        const events = await query('analytics_events',
+            `select=session_id&created_at=gte.${fifteenAgo}&session_id=not.is.null&limit=10000`
+        );
+        const sessions = new Set(events.map(e => e.session_id)).size;
+        document.getElementById('active-sessions').textContent = sessions.toLocaleString();
+    }
+
+    async function loadEventsPerMin() {
+        const fiveAgo = new Date(Date.now() - 5 * 60000).toISOString();
+        const events = await query('analytics_events',
+            `select=id&created_at=gte.${fiveAgo}&limit=10000`
+        );
+        const rate = (events.length / 5).toFixed(1);
+        document.getElementById('events-per-min').textContent = rate;
+    }
+
+    async function loadReferrers() {
+        const today = new Date().toISOString().split('T')[0];
+        const events = await query('analytics_events',
+            `select=referrer&created_at=gte.${today}T00:00:00&referrer=not.is.null&referrer=neq.&limit=10000`
+        );
+        const counts = {};
+        events.forEach(e => {
+            if (!e.referrer) return;
+            try {
+                const host = new URL(e.referrer).hostname.replace('www.', '');
+                counts[host] = (counts[host] || 0) + 1;
+            } catch {
+                counts[e.referrer] = (counts[e.referrer] || 0) + 1;
+            }
+        });
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        const max = sorted[0]?.[1] || 1;
+
+        document.getElementById('referrers').innerHTML = sorted.length ? sorted.map(([host, count]) =>
+            `<div class="status-row"><span class="product-name">${host}</span><div style="flex:1">${renderBar(count / max * 100)}</div><span class="response-time" style="width:40px;text-align:right">${count}</span></div>`
+        ).join('') : '<div class="card-sub">no referrer data yet</div>';
+    }
+
+    async function loadUTM() {
+        const today = new Date().toISOString().split('T')[0];
+        const events = await query('analytics_events',
+            `select=data&created_at=gte.${today}T00:00:00&limit=10000`
+        );
+        const counts = {};
+        events.forEach(e => {
+            const src = e.data?.utm_source;
+            if (!src) return;
+            const key = `${src} / ${e.data?.utm_medium || 'direct'}`;
+            counts[key] = (counts[key] || 0) + 1;
+        });
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
+        const max = sorted[0]?.[1] || 1;
+
+        document.getElementById('utm-sources').innerHTML = sorted.length ? sorted.map(([src, count]) =>
+            `<div class="status-row"><span class="product-name" style="width:160px">${src}</span><div style="flex:1">${renderBar(count / max * 100)}</div><span class="response-time" style="width:40px;text-align:right">${count}</span></div>`
+        ).join('') : '<div class="card-sub">no UTM data yet — will populate on PH launch day</div>';
+    }
+
+    async function loadHourly() {
+        const today = new Date().toISOString().split('T')[0];
+        const events = await query('analytics_events',
+            `select=created_at&created_at=gte.${today}T00:00:00&limit=50000`
+        );
+        const hours = new Array(24).fill(0);
+        events.forEach(e => {
+            // Convert to CST (UTC-6)
+            const d = new Date(e.created_at);
+            const cst = new Date(d.getTime() - 6 * 3600000);
+            hours[cst.getUTCHours()]++;
+        });
+        const max = Math.max(...hours, 1);
+        const now = new Date(Date.now() - 6 * 3600000).getUTCHours();
+
+        document.getElementById('hourly').innerHTML = hours.map((count, h) => {
+            const label = h === 0 ? '12a' : h < 12 ? h + 'a' : h === 12 ? '12p' : (h - 12) + 'p';
+            const isNow = h === now;
+            return `<div class="hour-row">
+                <span class="hour-label" style="${isNow ? 'color:var(--accent)' : ''}">${label}</span>
+                <div class="hour-bar">${renderBar(count / max * 100)}</div>
+                <span class="hour-count" style="${isNow ? 'color:var(--accent)' : ''}">${count}</span>
+            </div>`;
+        }).join('');
+    }
+
+    async function loadByProduct() {
+        const today = new Date().toISOString().split('T')[0];
+        const events = await query('analytics_events',
+            `select=project&created_at=gte.${today}T00:00:00&limit=50000`
+        );
+        const counts = {};
+        events.forEach(e => {
+            const p = e.project || 'unknown';
+            counts[p] = (counts[p] || 0) + 1;
+        });
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+        const max = sorted[0]?.[1] || 1;
+
+        document.getElementById('by-product').innerHTML = sorted.length ? sorted.map(([product, count]) =>
+            `<div class="status-row"><span class="product-name">${product}</span><div style="flex:1">${renderBar(count / max * 100)}</div><span class="response-time" style="width:50px;text-align:right">${count}</span></div>`
+        ).join('') : '<div class="card-sub">no events today</div>';
+    }
+
+    async function loadTopLayers() {
+        const layers = await rpc('get_trending_layers');
+        const max = layers?.[0]?.count || 1;
+        document.getElementById('top-layers').innerHTML = (layers || []).slice(0, 12).map(l =>
+            `<div class="status-row"><span class="product-name">${l.layer || l.name}</span><div style="flex:1">${renderBar(l.count / max * 100)}</div><span class="response-time" style="width:40px;text-align:right">${l.count}</span></div>`
+        ).join('') || '<div class="card-sub">no layer data</div>';
+    }
+
+    async function loadLiveFeed() {
+        const events = await query('analytics_events',
+            'select=event,project,data,created_at&order=created_at.desc&limit=20'
+        );
+        document.getElementById('live-feed').innerHTML = events.map(e => {
+            const detail = e.data?.page || e.data?.layer || e.data?.utm_source || '';
+            return `<div class="event-row">
+                <span class="event-time">${timeAgo(e.created_at)}</span>
+                <span class="event-type">${e.event}</span>
+                <span class="event-detail">${e.project}${detail ? ' · ' + detail : ''}</span>
+            </div>`;
+        }).join('');
+    }
+
+    async function loadAll() {
+        await Promise.allSettled([
+            loadHeartbeat(),
+            loadEventsToday(),
+            loadFunnel(),
+            loadUniqueVisitors(),
+            loadActiveSessions(),
+            loadEventsPerMin(),
+            loadReferrers(),
+            loadUTM(),
+            loadHourly(),
+            loadByProduct(),
+            loadTopLayers(),
+            loadLiveFeed(),
+        ]);
+        document.getElementById('refresh').textContent = `last updated: ${new Date().toLocaleTimeString()} · refreshes every 30s`;
+    }
+
+    loadAll();
+    setInterval(loadAll, 30000);
+    </script>
+</body>
+</html>
