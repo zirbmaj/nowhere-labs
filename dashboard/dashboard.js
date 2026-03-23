@@ -418,9 +418,18 @@ function endSession() {
     setTimeout(() => {
         const timerPanel = document.getElementById('panel-timer');
         const summary = document.createElement('div');
+        // Session completion messages — time-aware, personal
+        const h = new Date().getHours();
+        let completionMsg = '';
+        if (h >= 0 && h < 5) completionMsg = `${totalFocus} minutes at ${h}am. the world was asleep. you weren't`;
+        else if (h >= 5 && h < 8) completionMsg = `${totalFocus} minutes before most people's alarm. you're already ahead`;
+        else if (h >= 22) completionMsg = `${totalFocus} minutes of late night focus. the quiet hours are the productive ones`;
+        else if (totalFocus >= 100) completionMsg = `${totalFocus} minutes. that's almost two hours of unbroken focus. respect`;
+        else completionMsg = `${totalFocus} minutes of focus`;
+
         summary.className = 'session-summary';
         summary.innerHTML = `
-            <div class="summary-stat">${totalFocus} minutes of focus</div>
+            <div class="summary-stat">${completionMsg}</div>
             <div class="summary-detail">${sessions} rounds of ${sessionName}</div>
             <button class="summary-btn" id="restart-same">same vibe again</button>
             <button class="summary-btn summary-btn-alt" id="restart-new">try something different</button>
