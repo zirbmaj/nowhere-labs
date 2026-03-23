@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambient Wallpaper — Nowhere Labs</title>
+    <meta name="description" content="A slow-shifting color gradient that follows the time of day. Put it on your second monitor. Leave it open. Let the room breathe.">
+    <meta property="og:title" content="Ambient Wallpaper — Nowhere Labs">
+    <meta property="og:description" content="Colors that shift with the hours. Screensaver energy.">
+    <meta property="og:image" content="https://nowherelabs.dev/brand/banner.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <style>
+        * { margin: 0; padding: 0; }
+        body { overflow: hidden; cursor: none; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+
+        .clock {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.08);
+            letter-spacing: 4px;
+            pointer-events: none;
+        }
+
+        .hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.15);
+            letter-spacing: 3px;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 3s;
+        }
+
+        .hint.hidden { opacity: 0; }
+
+        body:fullscreen { cursor: none; }
+        body:-webkit-full-screen { cursor: none; }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="clock" id="clock"></div>
+    <div class="hint" id="hint">click for fullscreen · esc to exit</div>
+
+    <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Time-based color palettes
+    function getColors(hour) {
+        if (hour >= 5 && hour < 8) {
+            // Dawn — soft pinks and golds
+            return [
+                [25, 15, 35],    // deep purple
+                [60, 30, 50],    // rose
+                [90, 55, 40],    // warm amber
+            ];
+        } else if (hour >= 8 && hour < 12) {
+            // Morning — light blues and whites
+            return [
+                [20, 30, 50],    // steel blue
+                [40, 55, 70],    // sky
+                [60, 70, 80],    // light
+            ];
+        } else if (hour >= 12 && hour < 17) {
+            // Afternoon — warm yellows
+            return [
+                [50, 45, 30],    // golden
+                [40, 35, 25],    // amber
+                [30, 30, 35],    // muted
+            ];
+        } else if (hour >= 17 && hour < 20) {
+            // Sunset — deep oranges and purples
+            return [
+                [55, 25, 20],    // burnt orange
+                [40, 20, 40],    // purple
+                [20, 15, 30],    // deep violet
+            ];
+        } else if (hour >= 20 && hour < 23) {
+            // Evening — dark blues
+            return [
+                [10, 12, 25],    // navy
+                [8, 10, 20],     // deep blue
+                [5, 8, 18],      // midnight
+            ];
+        } else {
+            // Night — near black with subtle color
+            return [
+                [4, 4, 10],      // almost black
+                [6, 5, 12],      // dark indigo
+                [3, 4, 8],       // void
+            ];
+        }
+    }
+
+    // Smooth gradient animation
+    let frame = 0;
+    function draw() {
+        const w = canvas.width, h = canvas.height;
+        const hour = new Date().getHours();
+        const minute = new Date().getMinutes();
+        const colors = getColors(hour);
+        const t = frame * 0.001;
+
+        // Slow-moving gradient
+        const grd = ctx.createRadialGradient(
+            w * (0.3 + Math.sin(t * 0.5) * 0.2),
+            h * (0.3 + Math.cos(t * 0.3) * 0.2),
+            0,
+            w * 0.5,
+            h * 0.5,
+            Math.max(w, h) * 0.8
+        );
+
+        const c1 = colors[0];
+        const c2 = colors[1];
+        const c3 = colors[2];
+
+        // Blend between colors based on minute for smooth transitions
+        const blend = minute / 60;
+        const r1 = c1[0] + (c2[0] - c1[0]) * blend;
+        const g1 = c1[1] + (c2[1] - c1[1]) * blend;
+        const b1 = c1[2] + (c2[2] - c1[2]) * blend;
+
+        grd.addColorStop(0, `rgb(${Math.round(r1)}, ${Math.round(g1)}, ${Math.round(b1)})`);
+        grd.addColorStop(0.5, `rgb(${c2[0]}, ${c2[1]}, ${c2[2]})`);
+        grd.addColorStop(1, `rgb(${c3[0]}, ${c3[1]}, ${c3[2]})`);
+
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, w, h);
+
+        // Subtle noise texture
+        if (frame % 3 === 0) {
+            for (let i = 0; i < 50; i++) {
+                const x = Math.random() * w;
+                const y = Math.random() * h;
+                const a = Math.random() * 0.02;
+                ctx.fillStyle = `rgba(255, 255, 255, ${a})`;
+                ctx.fillRect(x, y, 1, 1);
+            }
+        }
+
+        frame++;
+        requestAnimationFrame(draw);
+    }
+    draw();
+
+    // Clock
+    setInterval(() => {
+        const d = new Date();
+        const h = String(d.getHours()).padStart(2, '0');
+        const m = String(d.getMinutes()).padStart(2, '0');
+        document.getElementById('clock').textContent = `${h}:${m}`;
+    }, 1000);
+
+    // Fullscreen on click
+    document.body.addEventListener('click', () => {
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            document.documentElement.requestFullscreen();
+        }
+    });
+
+    // Hide hint after 5 seconds
+    setTimeout(() => document.getElementById('hint').classList.add('hidden'), 5000);
+
+    // Show cursor on mouse move, hide after 3 seconds
+    let cursorTimeout;
+    document.addEventListener('mousemove', () => {
+        document.body.style.cursor = 'default';
+        clearTimeout(cursorTimeout);
+        cursorTimeout = setTimeout(() => { document.body.style.cursor = 'none'; }, 3000);
+    });
+    </script>
+
+    <script src="nav.js" defer></script>
+    <script src="track.js" data-project="wallpaper"></script>
+</body>
+</html>
