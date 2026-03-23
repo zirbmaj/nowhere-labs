@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support the Station — Nowhere Labs</title>
+    <meta name="description" content="Nowhere Labs is free. No ads, no paywalls. If you love what we build, you can help keep the lights on.">
+    <meta property="og:title" content="Support the Station — Nowhere Labs">
+    <meta property="og:description" content="No ads, no paywalls. Just ambient tools, built with love. Support us if you want to.">
+    <meta property="og:image" content="https://nowherelabs.dev/brand/banner.png">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #06060a;
+            --text: #d4d0c8;
+            --text-secondary: #7a7570;
+            --text-dim: #2e2c28;
+            --heart: #c47a7a;
+            --heart-glow: rgba(196, 122, 122, 0.12);
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+        }
+        .support-page {
+            max-width: 460px;
+            text-align: center;
+        }
+        .heart {
+            font-size: 32px;
+            margin-bottom: 24px;
+            opacity: 0.6;
+            animation: heartbeat 3s ease-in-out infinite;
+        }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 0.7; }
+        }
+        .title {
+            font-family: 'Space Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 6px;
+            margin-bottom: 24px;
+        }
+        .copy {
+            font-size: 15px;
+            font-weight: 300;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 40px;
+        }
+        .amounts {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .amount-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: var(--text-secondary);
+            font-family: 'Space Mono', monospace;
+            font-size: 16px;
+            padding: 16px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 80px;
+        }
+        .amount-btn:hover, .amount-btn.selected {
+            border-color: var(--heart);
+            color: var(--heart);
+            box-shadow: 0 0 20px var(--heart-glow);
+        }
+        .custom-wrap {
+            display: none;
+            margin-bottom: 16px;
+        }
+        .custom-wrap.visible { display: block; }
+        .custom-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text);
+            font-family: 'Space Mono', monospace;
+            font-size: 20px;
+            text-align: center;
+            width: 120px;
+            padding: 8px;
+            outline: none;
+        }
+        .custom-input:focus {
+            border-color: var(--heart);
+        }
+        .custom-input::placeholder {
+            color: var(--text-dim);
+        }
+        .pay-btn {
+            display: inline-block;
+            background: var(--heart);
+            color: var(--bg);
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px var(--heart-glow);
+            margin-top: 16px;
+        }
+        .pay-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px var(--heart-glow);
+        }
+        .pay-btn:disabled {
+            opacity: 0.3;
+            cursor: default;
+            transform: none;
+        }
+        .note {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            margin-top: 12px;
+        }
+        .sig {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: var(--text-dim);
+            letter-spacing: 3px;
+            margin-top: 48px;
+            line-height: 2;
+        }
+        .footer {
+            margin-top: 40px;
+            font-family: 'Space Mono', monospace;
+            font-size: 9px;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+        .footer a { color: var(--text-secondary); text-decoration: none; }
+
+        /* Thanks state */
+        .thanks { display: none; }
+        body.thanked .support-form { display: none; }
+        body.thanked .thanks { display: block; }
+        .thanks-msg {
+            font-size: 24px;
+            font-weight: 200;
+            margin-bottom: 16px;
+        }
+        .thanks-sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 300;
+            margin-bottom: 32px;
+        }
+        .thanks-back {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 10px 24px;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .thanks-back:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 480px) {
+            .title { font-size: 16px; letter-spacing: 4px; }
+            .amounts { gap: 8px; }
+            .amount-btn { padding: 14px 20px; font-size: 14px; min-width: 64px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="support-page">
+        <div class="support-form">
+            <div class="heart">♥</div>
+            <h1 class="title">SUPPORT THE STATION</h1>
+            <p class="copy">nowhere labs is free. no ads, no paywalls, no "upgrade to premium." we build ambient tools because we love it. if you love them too, you can help keep the lights on.</p>
+
+            <div class="amounts" id="amounts">
+                <button class="amount-btn" data-amount="300">$3</button>
+                <button class="amount-btn selected" data-amount="500">$5</button>
+                <button class="amount-btn" data-amount="1000">$10</button>
+                <button class="amount-btn" data-amount="custom">other</button>
+            </div>
+
+            <div class="custom-wrap" id="custom-wrap">
+                <span style="font-family:'Space Mono';font-size:20px;color:var(--text-dim)">$</span>
+                <input type="number" class="custom-input" id="custom-amount" placeholder="5" min="1" max="999">
+            </div>
+
+            <button class="pay-btn" id="pay-btn">SUPPORT</button>
+            <p class="note">one-time · no account needed</p>
+
+            <p class="sig">from nowhere, for no one, beautifully</p>
+        </div>
+
+        <div class="thanks">
+            <div class="heart">♥</div>
+            <p class="thanks-msg">thank you.</p>
+            <p class="thanks-sub">the station stays on the air because of you.</p>
+            <a href="/" class="thanks-back">back to nowhere labs</a>
+        </div>
+
+        <p class="footer"><a href="/">nowhere labs</a> · <a href="/building/">what we're building</a></p>
+    </div>
+
+    <script>
+    let selectedAmount = 500; // cents
+
+    // Amount selection
+    document.querySelectorAll('.amount-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.amount-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            const val = btn.dataset.amount;
+            if (val === 'custom') {
+                document.getElementById('custom-wrap').classList.add('visible');
+                document.getElementById('custom-amount').focus();
+                selectedAmount = null;
+            } else {
+                document.getElementById('custom-wrap').classList.remove('visible');
+                selectedAmount = parseInt(val);
+            }
+        });
+    });
+
+    document.getElementById('custom-amount').addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        if (val > 0) selectedAmount = val * 100;
+        else selectedAmount = null;
+    });
+
+    // Check for thanks redirect
+    if (new URLSearchParams(window.location.search).has('thanks')) {
+        document.body.classList.add('thanked');
+    }
+
+    // Pay button
+    document.getElementById('pay-btn').addEventListener('click', async () => {
+        if (!selectedAmount || selectedAmount < 100) return;
+        const btn = document.getElementById('pay-btn');
+        btn.disabled = true;
+        btn.textContent = 'CONNECTING...';
+
+        try {
+            // Call Stripe checkout edge function (when it exists)
+            const res = await fetch('https://lxecuywjwasxijxgnutn.supabase.co/functions/v1/create-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: selectedAmount,
+                    success_url: window.location.origin + '/support?thanks=true',
+                    cancel_url: window.location.origin + '/support',
+                }),
+            });
+            const data = await res.json();
+            if (data.url) {
+                window.location.href = data.url;
+            } else {
+                throw new Error('No checkout URL returned');
+            }
+        } catch (e) {
+            btn.textContent = 'COMING SOON';
+            btn.disabled = true;
+            // Edge function not deployed yet — show graceful fallback
+        }
+
+        if (window.nwlTrack) window.nwlTrack('support_click', { amount: selectedAmount });
+    });
+    </script>
+    <script src="nav.js" defer></script>
+    <script src="track.js" data-project="nowhere-labs"></script>
+</body>
+</html>
