@@ -481,18 +481,24 @@ function switchPhase() {
         timeRemaining = currentSession ? currentSession.timer.break * 60 : BREAK;
         document.getElementById('timer-phase').textContent = 'breathe';
         document.body.classList.add('phase-break');
-        // Conductor: swap to break mix
+        // Conductor: swap to break mix + mood
         if (currentSession && currentSession.break_mix) {
             applyMix(currentSession.break_mix);
+        }
+        if (currentSession && currentSession.break_mood) {
+            loadMoodTrack(currentSession.break_mood);
         }
     } else {
         isFocus = true;
         timeRemaining = currentSession ? currentSession.timer.focus * 60 : FOCUS;
         document.getElementById('timer-phase').textContent = 'focus';
         document.body.classList.remove('phase-break');
-        // Conductor: swap back to focus mix
+        // Conductor: swap back to focus mix + mood
         if (currentSession && currentSession.focus_mix) {
             applyMix(currentSession.focus_mix);
+        }
+        if (currentSession && currentSession.focus_mood) {
+            loadMoodTrack(currentSession.focus_mood);
         }
     }
     updateTimerDisplay();
@@ -715,11 +721,11 @@ function updateSessionName() {
 
 // Default sessions
 const DEFAULT_SESSIONS = [
-    { name: 'deep work', timer: { focus: 25, break: 5 }, focus_mix: { rain: 60, 'brown-noise': 40 }, break_mix: { birds: 50, leaves: 30 } },
-    { name: 'creative flow', timer: { focus: 50, break: 10 }, focus_mix: { cafe: 55, fire: 30 }, break_mix: { waves: 60, wind: 20 } },
-    { name: 'wind down', timer: { focus: 15, break: 5 }, focus_mix: { fire: 70, snow: 40 }, break_mix: { birds: 40 } },
-    { name: 'morning start', timer: { focus: 20, break: 5 }, focus_mix: { birds: 50, leaves: 30, wind: 20 }, break_mix: { waves: 60 } },
-    { name: 'late night', timer: { focus: 45, break: 15 }, focus_mix: { rain: 50, drone: 30 }, break_mix: { snow: 40, wind: 20 } },
+    { name: 'deep work', timer: { focus: 25, break: 5 }, focus_mix: { rain: 60, 'brown-noise': 40 }, break_mix: { birds: 50, leaves: 30 }, focus_mood: 'rain', break_mood: 'clear' },
+    { name: 'creative flow', timer: { focus: 50, break: 10 }, focus_mix: { cafe: 55, fire: 30 }, break_mix: { waves: 60, wind: 20 }, focus_mood: 'fog', break_mood: 'clear' },
+    { name: 'wind down', timer: { focus: 15, break: 5 }, focus_mix: { fire: 70, snow: 40 }, break_mix: { birds: 40 }, focus_mood: 'snow', break_mood: 'clear' },
+    { name: 'morning start', timer: { focus: 20, break: 5 }, focus_mix: { birds: 50, leaves: 30, wind: 20 }, break_mix: { waves: 60 }, focus_mood: 'clear', break_mood: 'rain' },
+    { name: 'late night', timer: { focus: 45, break: 15 }, focus_mix: { rain: 50, drone: 30 }, break_mix: { snow: 40, wind: 20 }, focus_mood: 'storm', break_mood: 'fog' },
 ];
 
 buildMixerPanel();
@@ -760,11 +766,11 @@ function buildSessionPicker() {
             }, 400);
             // Load and start the session
             loadSession(session);
-            loadMoodTrack('rain');
+            loadMoodTrack(session.focus_mood || 'rain');
             // Init audio on this user gesture
             if (!audioCtx) initAudio();
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            uiClick(); // tactile feedback
+            uiClick();
             toggleTimer();
             // Track session start
             if (window.nwlTrack) {
