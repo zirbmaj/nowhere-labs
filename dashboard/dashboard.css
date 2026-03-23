@@ -738,7 +738,7 @@ body.phase-break .panel-timer {
     align-items: center;
     gap: 16px;
     padding: 14px 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.02);
+    border-top: 1px solid var(--border);
     background: linear-gradient(0deg, rgba(6, 6, 10, 1) 0%, var(--bg-panel) 100%);
     flex-shrink: 0;
 }
@@ -799,9 +799,9 @@ body.phase-break .panel-timer {
 .master-slider {
     -webkit-appearance: none;
     width: 120px;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 1px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
     outline: none;
 }
 
