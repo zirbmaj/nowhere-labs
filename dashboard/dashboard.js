@@ -758,8 +758,17 @@ function buildSessionPicker() {
         card.className = 'picker-card';
         card.style.animation = `pickerFadeIn 0.5s ease ${i * 0.12}s both`;
         const desc = SESSION_DESCRIPTIONS[session.name] || {};
+        // Build mini fingerprint from focus_mix
+        const allLayerIds = LAYERS.map(l => l.id);
+        const fpDots = allLayerIds.map(id => {
+            const vol = (session.focus_mix && session.focus_mix[id]) || 0;
+            if (vol === 0) return '<span class="fp-dot-mini" style="opacity:0.08"></span>';
+            const o = 0.3 + (vol / 100) * 0.7;
+            return `<span class="fp-dot-mini" style="opacity:${o}"></span>`;
+        }).join('');
         card.innerHTML = `
             <div class="picker-card-name">${session.name}</div>
+            <div class="picker-fp">${fpDots}</div>
             <div class="picker-card-sounds">${desc.sounds || ''}</div>
             <div class="picker-card-time">${desc.time || ''}</div>
         `;

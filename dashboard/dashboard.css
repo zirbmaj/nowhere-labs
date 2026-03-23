@@ -201,6 +201,21 @@ body.phase-break {
     letter-spacing: 1px;
 }
 
+.picker-fp {
+    display: flex;
+    gap: 2px;
+    justify-content: center;
+    margin-bottom: 8px;
+}
+
+.fp-dot-mini {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+}
+
 .picker-card-empty {
     border-style: dashed;
     opacity: 0.6;
