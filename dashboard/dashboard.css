@@ -13,15 +13,22 @@
     --border: rgba(255, 255, 255, 0.03);
 }
 
-/* Phase transition — the room shifts when you shift */
+/* Base layout */
 body {
-    transition: background-color 2s ease;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    transition: background 1.5s ease;
 }
 
+/* Phase transition — the room shifts when you shift */
 body.phase-break {
-    --accent: #8a7a6a;
+    --accent: var(--accent-warm);
     --accent-glow: rgba(138, 122, 106, 0.12);
-    background-color: #08070a;
+    --bg: #08060a;
+    --bg-panel: #0c0a10;
 }
 
 body.phase-break .ring-progress {
@@ -35,23 +42,6 @@ body.phase-break .timer-phase {
 
 body.phase-break .panel-timer {
     background: linear-gradient(180deg, var(--bg-panel) 0%, rgba(20, 16, 12, 0.3) 100%);
-}
-
-body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    height: 100vh;
-    overflow: hidden;
-    transition: background 1.5s ease;
-}
-
-/* Phase color shift — the room changes */
-body.phase-break {
-    --accent: var(--accent-warm);
-    --accent-glow: rgba(138, 122, 106, 0.12);
-    --bg: #08060a;
-    --bg-panel: #0c0a10;
 }
 
 .dashboard {
@@ -77,17 +67,6 @@ body.phase-break {
     letter-spacing: 4px;
     color: var(--text-dim);
     text-decoration: none;
-}
-
-.beta-tag {
-    font-size: 7px;
-    letter-spacing: 2px;
-    color: var(--accent);
-    border: 1px solid rgba(122, 138, 106, 0.3);
-    padding: 2px 6px;
-    border-radius: 3px;
-    vertical-align: middle;
-    margin-left: 6px;
 }
 
 .dash-session-name {
