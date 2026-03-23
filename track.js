@@ -8,6 +8,10 @@
     const script = document.currentScript;
     const PROJECT = script?.getAttribute('data-project') || 'unknown';
 
+    // Skip bots and automated tools
+    const ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|headless|screenshot|vercel|prerender|lighthouse/i.test(ua)) return;
+
     // Persistent user ID for retention tracking (survives tab close)
     let userId = localStorage.getItem('nwl_uid');
     if (!userId) {
