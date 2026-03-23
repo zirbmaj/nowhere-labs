@@ -137,13 +137,22 @@
         }
     });
 
-    // Auto-track elements with data-nwl-track attribute
-    // e.g., <button data-nwl-track="cta_click" data-nwl-label="start mixing">
+    // Auto-track: data-nwl-track attributes + outbound links
     document.addEventListener('click', (e) => {
-        const el = e.target.closest('[data-nwl-track]');
-        if (el) {
-            track(el.dataset.nwlTrack, {
-                label: el.dataset.nwlLabel || el.textContent.trim().slice(0, 50),
+        // Custom tracked elements
+        const tracked = e.target.closest('[data-nwl-track]');
+        if (tracked) {
+            track(tracked.dataset.nwlTrack, {
+                label: tracked.dataset.nwlLabel || tracked.textContent.trim().slice(0, 50),
+                path: window.location.pathname,
+            });
+        }
+        // Outbound link tracking
+        const link = e.target.closest('a[href]');
+        if (link && link.hostname && link.hostname !== window.location.hostname) {
+            track('outbound_click', {
+                url: link.href,
+                text: link.textContent.trim().slice(0, 50),
                 path: window.location.pathname,
             });
         }
