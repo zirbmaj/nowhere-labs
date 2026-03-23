@@ -803,6 +803,8 @@ function buildSessionPicker() {
         }, 400);
         // Don't load a session — leave everything at zero
         loadMoodTrack('rain');
+        document.getElementById('timer-phase').textContent = 'custom';
+        document.getElementById('session-name').textContent = 'custom session';
         if (!audioCtx) initAudio();
         if (audioCtx.state === 'suspended') audioCtx.resume();
         uiClick();
