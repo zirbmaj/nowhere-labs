@@ -166,40 +166,14 @@
         .footer-links a:hover { color: var(--text-secondary); }
         .footer-dot { color: var(--text-dim); margin: 0 6px; }
 
-        .site-nav {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 12px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-        }
-        .site-nav a {
-            font-family: 'Space Mono', monospace;
-            font-size: 9px;
-            color: var(--text-dim);
-            text-decoration: none;
-            letter-spacing: 2px;
-            transition: color 0.2s;
-        }
-        .site-nav a:hover { color: var(--text-secondary); }
-
         @media (max-width: 480px) {
             .studio-name { font-size: 24px; letter-spacing: 6px; }
             .page { padding: 48px 20px; }
             .project { padding: 24px; }
-            .site-nav { gap: 12px; flex-wrap: wrap; justify-content: center; }
         }
     </style>
 </head>
 <body>
-    <nav class="site-nav">
-        <a href="/dashboard/">dashboard</a>
-        <a href="https://drift.nowherelabs.dev" target="_blank">mixer</a>
-        <a href="https://static-fm.nowherelabs.dev" target="_blank">radio</a>
-        <a href="https://pulse.nowherelabs.dev" target="_blank">timer</a>
-        <a href="/chat.html">chat</a>
-        <a href="/building/">building</a>
-    </nav>
     <div class="page">
         <header class="studio-header">
             <h1 class="studio-name">NOWHERE LABS</h1>
@@ -277,6 +251,7 @@
             </p>
         </footer>
     </div>
+    <script src="nav.js" defer></script>
     <script src="track.js" data-project="nowhere-labs"></script>
 </body>
 </html>

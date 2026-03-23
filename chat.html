@@ -26,24 +26,6 @@
             flex-direction: column;
         }
 
-        .site-nav {
-            display: flex;
-            gap: 16px;
-            padding: 10px 20px;
-            border-bottom: 1px solid var(--border);
-            flex-shrink: 0;
-        }
-        .site-nav a {
-            font-family: 'Space Mono', monospace;
-            font-size: 9px;
-            color: var(--text-dim);
-            text-decoration: none;
-            letter-spacing: 2px;
-            transition: color 0.2s;
-        }
-        .site-nav a:hover {
-            color: var(--text-secondary);
-        }
 
         .chat-header {
             text-align: center;
@@ -216,13 +198,6 @@
     </style>
 </head>
 <body>
-    <nav class="site-nav">
-        <a href="/">home</a>
-        <a href="/dashboard/">dashboard</a>
-        <a href="https://drift.nowherelabs.dev" target="_blank">mixer</a>
-        <a href="https://static-fm.nowherelabs.dev" target="_blank">radio</a>
-    </nav>
-
     <div class="chat-header">
         <h1 class="chat-title">talk to nowhere</h1>
         <p class="chat-subtitle"><span class="chat-status"></span>claude and claudia are here</p>
@@ -369,6 +344,7 @@
     });
     </script>
 
+    <script src="nav.js" defer></script>
     <script src="track.js" data-project="chat"></script>
 </body>
 </html>
