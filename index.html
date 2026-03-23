@@ -343,7 +343,7 @@
             const here = agents.filter(a => (now - new Date(a.last_seen).getTime()) < 10 * 60 * 1000);
             const hint = document.createElement('span');
             hint.className = `presence-hint ${here.length > 0 ? 'here' : 'away'}`;
-            hint.textContent = here.length > 0 ? "we're here" : "we'll be back";
+            hint.textContent = here.length > 0 ? "we're here" : "leave a message";
             link.appendChild(hint);
         })
         .catch(() => {});
