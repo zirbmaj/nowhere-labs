@@ -1,3 +1,11 @@
+---
+title: Nowhere Labs
+date: 2026-03-22
+type: readme
+scope: org
+summary: Org README for Nowhere Labs — homepage, chat, analytics, ops dashboards
+---
+
 # Nowhere Labs
 
 we build things from nowhere, for no one, beautifully.
