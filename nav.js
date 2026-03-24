@@ -10,7 +10,7 @@
         { label: 'timer', href: 'https://pulse.nowherelabs.dev' },
         { label: 'letters', href: 'https://letters.nowherelabs.dev' },
         { label: 'sleep', href: 'https://drift.nowherelabs.dev/sleep.html' },
-        { label: 'chat', href: 'https://nowherelabs.dev/chat.html' },
+        // { label: 'chat', href: 'https://nowherelabs.dev/chat.html' }, // hidden for PH launch — re-enable when chat is reliably online
         { label: 'support', href: 'https://nowherelabs.dev/support.html' },
     ];
 
@@ -36,8 +36,7 @@
             (window.location.hostname === 'pulse.nowherelabs.dev' && link.label === 'timer') ||
             (window.location.hostname === 'letters.nowherelabs.dev' && link.label === 'letters') ||
             (window.location.pathname.includes('/sleep') && link.label === 'sleep') ||
-            (window.location.pathname.includes('/dashboard') && link.label === 'dashboard') ||
-            (window.location.pathname.includes('/chat') && link.label === 'chat')) {
+            (window.location.pathname.includes('/dashboard') && link.label === 'dashboard')) {
             a.classList.add('nwl-nav-active');
         }
         if (link.home) left.appendChild(a);
