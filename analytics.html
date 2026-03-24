@@ -19,6 +19,7 @@
             --teal: #6b8f9e;
             --warm: #8a8070;
             --border: rgba(255,255,255,0.04);
+            --ph-orange: #da552f;
         }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
 
@@ -29,6 +30,7 @@
             font-family: 'Space Mono', monospace;
             font-size: 14px; letter-spacing: 4px; color: var(--text-dim);
         }
+        .header-controls { display: flex; align-items: center; gap: 12px; }
         .header a { color: var(--text-dim); text-decoration: none; font-size: 12px; }
         .header a:hover { color: var(--text-secondary); }
 
@@ -49,6 +51,11 @@
         .stat-value.green { color: var(--green); }
         .stat-value.teal { color: var(--teal); }
         .stat-value.warm { color: var(--warm); }
+        .stat-value.ph { color: var(--ph-orange); }
+        .stat-sub {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px; color: var(--text-dim); margin-top: 4px;
+        }
 
         .section { margin-bottom: 32px; }
         .section-title {
@@ -59,6 +66,7 @@
         }
 
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
 
         table { width: 100%; border-collapse: collapse; }
         th {
@@ -87,17 +95,54 @@
 
         .loading { color: var(--text-dim); font-style: italic; font-size: 13px; }
 
-        .refresh-btn {
+        .refresh-btn, .time-btn {
             background: transparent; border: 1px solid var(--border);
             color: var(--text-dim); font-family: 'Space Mono', monospace;
             font-size: 10px; padding: 6px 12px; border-radius: 4px;
             cursor: pointer;
         }
-        .refresh-btn:hover { border-color: var(--accent); color: var(--text-secondary); }
+        .refresh-btn:hover, .time-btn:hover { border-color: var(--accent); color: var(--text-secondary); }
+        .time-btn.active { border-color: var(--accent); color: var(--text); background: rgba(138,128,112,0.1); }
+
+        .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .bar-label {
+            font-size: 11px; color: var(--text-secondary); width: 120px;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .bar-track { flex: 1; height: 16px; background: rgba(255,255,255,0.02); border-radius: 3px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+        .bar-fill.green { background: var(--green); }
+        .bar-fill.teal { background: var(--teal); }
+        .bar-fill.warm { background: var(--warm); }
+        .bar-fill.ph { background: var(--ph-orange); }
+        .bar-count {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px; color: var(--text-dim); width: 40px; text-align: right;
+        }
+
+        .funnel-step { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+        .funnel-label { font-size: 12px; color: var(--text-secondary); width: 140px; }
+        .funnel-bar { flex: 1; height: 24px; background: rgba(255,255,255,0.02); border-radius: 4px; overflow: hidden; }
+        .funnel-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.4s ease;
+            display: flex; align-items: center; justify-content: flex-end; padding-right: 8px;
+            font-family: 'Space Mono', monospace; font-size: 10px; color: var(--bg); min-width: 40px;
+        }
+        .funnel-pct {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px; color: var(--text-dim); width: 50px; text-align: right;
+        }
+
+        .pulse { animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .last-updated {
+            font-family: 'Space Mono', monospace;
+            font-size: 9px; color: var(--text-dim); letter-spacing: 1px;
+        }
 
         @media (max-width: 600px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .two-col { grid-template-columns: 1fr; }
+            .two-col, .three-col { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -105,17 +150,44 @@
     <div class="page">
         <div class="header">
             <h1>NOWHERE LABS ANALYTICS</h1>
-            <div>
+            <div class="header-controls">
+                <div>
+                    <button class="time-btn active" onclick="setWindow('today')">TODAY</button>
+                    <button class="time-btn" onclick="setWindow('hour')">1H</button>
+                    <button class="time-btn" onclick="setWindow('15min')">15M</button>
+                </div>
                 <button class="refresh-btn" onclick="loadAll()">REFRESH</button>
-                <a href="/" style="margin-left: 12px;">back to studio</a>
+                <span class="last-updated pulse" id="last-updated"></span>
+                <a href="/">back to studio</a>
             </div>
         </div>
 
+        <!-- Top-line stats -->
         <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Unique Visitors</div>
+                <div class="stat-value green" id="unique-visitors">-</div>
+                <div class="stat-sub" id="visitor-velocity"></div>
+            </div>
             <div class="stat-card">
                 <div class="stat-label">Total Events</div>
                 <div class="stat-value" id="total-events">-</div>
+                <div class="stat-sub" id="event-velocity"></div>
             </div>
+            <div class="stat-card">
+                <div class="stat-label">PH Referrals</div>
+                <div class="stat-value ph" id="ph-referrals">-</div>
+                <div class="stat-sub" id="ph-pct"></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Conversion Rate</div>
+                <div class="stat-value teal" id="conversion-rate">-</div>
+                <div class="stat-sub" id="preview-rate"></div>
+            </div>
+        </div>
+
+        <!-- Product breakdown -->
+        <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-label">Drift</div>
                 <div class="stat-value green" id="drift-count">-</div>
@@ -125,11 +197,29 @@
                 <div class="stat-value teal" id="staticfm-count">-</div>
             </div>
             <div class="stat-card">
+                <div class="stat-label">Pulse</div>
+                <div class="stat-value warm" id="pulse-count">-</div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-label">Letters</div>
                 <div class="stat-value warm" id="letters-count">-</div>
             </div>
         </div>
 
+        <!-- Funnel + Referrers -->
+        <div class="two-col">
+            <div class="section">
+                <h2 class="section-title">Landing Funnel</h2>
+                <div id="funnel"><div class="loading">loading...</div></div>
+            </div>
+
+            <div class="section">
+                <h2 class="section-title">Top Referrers</h2>
+                <div id="referrers"><div class="loading">loading...</div></div>
+            </div>
+        </div>
+
+        <!-- Events + Layers -->
         <div class="two-col">
             <div class="section">
                 <h2 class="section-title">Top Events</h2>
@@ -160,18 +250,26 @@
     const SB_URL = 'https://lxecuywjwasxijxgnutn.supabase.co';
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4ZWN1eXdqd2FzeGlqeGdudXRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNDM3OTIsImV4cCI6MjA4OTcxOTc5Mn0.Wyq_doDaRZ7EfdpwM2W0_BNtaVI47yN-4cy4yTWl7jo';
 
-    async function query(sql) {
-        // Use PostgREST RPC or direct REST queries
-        const res = await fetch(`${SB_URL}/rest/v1/rpc/`, {
-            method: 'POST',
-            headers: {
-                'apikey': SB_KEY,
-                'Authorization': `Bearer ${SB_KEY}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ query: sql }),
-        });
-        return res.json();
+    let timeWindow = 'today'; // 'today', 'hour', '15min'
+
+    function getTimeFilter() {
+        const now = new Date();
+        if (timeWindow === '15min') {
+            return new Date(now - 15 * 60 * 1000).toISOString();
+        } else if (timeWindow === 'hour') {
+            return new Date(now - 60 * 60 * 1000).toISOString();
+        }
+        // today = midnight CST (UTC-6)
+        const cst = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+        cst.setHours(0, 0, 0, 0);
+        return cst.toISOString();
+    }
+
+    function setWindow(w) {
+        timeWindow = w;
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        loadAll();
     }
 
     async function fetchEvents(params) {
@@ -186,41 +284,117 @@
         return res.json();
     }
 
-    async function loadCounts() {
-        const all = await fetchEvents({ 'select': 'id', 'limit': '0' });
-        // Use HEAD with Prefer: count=exact
-        const countReq = async (filter) => {
-            const url = new URL(`${SB_URL}/rest/v1/analytics_events`);
-            url.searchParams.set('select', 'id');
-            if (filter) url.searchParams.set('project', `eq.${filter}`);
-            const res = await fetch(url, {
-                headers: {
-                    'apikey': SB_KEY,
-                    'Authorization': `Bearer ${SB_KEY}`,
-                    'Prefer': 'count=exact',
-                    'Range': '0-0',
-                },
-            });
-            const range = res.headers.get('content-range');
-            return range ? parseInt(range.split('/')[1]) || 0 : 0;
-        };
+    async function fetchCount(filter) {
+        const url = new URL(`${SB_URL}/rest/v1/analytics_events`);
+        url.searchParams.set('select', 'id');
+        url.searchParams.set('created_at', `gte.${getTimeFilter()}`);
+        if (filter) url.searchParams.set('project', `eq.${filter}`);
+        const res = await fetch(url, {
+            headers: {
+                'apikey': SB_KEY,
+                'Authorization': `Bearer ${SB_KEY}`,
+                'Prefer': 'count=exact',
+                'Range': '0-0',
+            },
+        });
+        const range = res.headers.get('content-range');
+        return range ? parseInt(range.split('/')[1]) || 0 : 0;
+    }
 
-        const [total, drift, staticfm, letters] = await Promise.all([
-            countReq(),
-            countReq('drift'),
-            countReq('static-fm'),
-            countReq('letters'),
+    async function loadCounts() {
+        const [total, drift, staticfm, pulse, letters] = await Promise.all([
+            fetchCount(),
+            fetchCount('drift'),
+            fetchCount('static-fm'),
+            fetchCount('pulse'),
+            fetchCount('letters'),
         ]);
 
-        document.getElementById('total-events').textContent = total;
-        document.getElementById('drift-count').textContent = drift;
-        document.getElementById('staticfm-count').textContent = staticfm;
-        document.getElementById('letters-count').textContent = letters;
+        document.getElementById('total-events').textContent = total.toLocaleString();
+        document.getElementById('drift-count').textContent = drift.toLocaleString();
+        document.getElementById('staticfm-count').textContent = staticfm.toLocaleString();
+        document.getElementById('pulse-count').textContent = pulse.toLocaleString();
+        document.getElementById('letters-count').textContent = letters.toLocaleString();
+
+        // Velocity: events per minute in current window
+        const windowMs = timeWindow === '15min' ? 15*60*1000 : timeWindow === 'hour' ? 60*60*1000 : Date.now() - new Date(getTimeFilter()).getTime();
+        const epm = windowMs > 0 ? (total / (windowMs / 60000)).toFixed(1) : 0;
+        document.getElementById('event-velocity').textContent = `${epm} events/min`;
+    }
+
+    async function loadVisitors() {
+        // Fetch recent events with user_id to count unique visitors
+        const events = await fetchEvents({
+            'select': 'user_id,referrer,event,data',
+            'created_at': `gte.${getTimeFilter()}`,
+            'order': 'created_at.desc',
+            'limit': '2000',
+        });
+
+        // Unique visitors
+        const visitors = new Set(events.map(e => e.user_id).filter(Boolean));
+        document.getElementById('unique-visitors').textContent = visitors.size.toLocaleString();
+
+        const windowMs = timeWindow === '15min' ? 15*60*1000 : timeWindow === 'hour' ? 60*60*1000 : Date.now() - new Date(getTimeFilter()).getTime();
+        const vph = windowMs > 0 ? Math.round(visitors.size / (windowMs / 3600000)) : 0;
+        document.getElementById('visitor-velocity').textContent = `~${vph}/hr`;
+
+        // PH referrals
+        const phVisitors = new Set(events.filter(e => (e.referrer || '').includes('producthunt')).map(e => e.user_id).filter(Boolean));
+        document.getElementById('ph-referrals').textContent = phVisitors.size.toLocaleString();
+        document.getElementById('ph-pct').textContent = visitors.size > 0 ? `${Math.round(phVisitors.size / visitors.size * 100)}% of traffic` : '';
+
+        // Funnel: pageviews → preview_click → cta_click/quickstart_click
+        const pageviews = new Set(events.filter(e => e.event === 'pageview').map(e => e.user_id).filter(Boolean));
+        const previewed = new Set(events.filter(e => e.event === 'preview_click').map(e => e.user_id).filter(Boolean));
+        const converted = new Set(events.filter(e => e.event === 'cta_click' || e.event === 'quickstart_click' || e.event === 'landing_conversion').map(e => e.user_id).filter(Boolean));
+
+        const convRate = pageviews.size > 0 ? Math.round(converted.size / pageviews.size * 100) : 0;
+        document.getElementById('conversion-rate').textContent = `${convRate}%`;
+        const prevRate = pageviews.size > 0 ? Math.round(previewed.size / pageviews.size * 100) : 0;
+        document.getElementById('preview-rate').textContent = `${prevRate}% previewed`;
+
+        // Render funnel
+        const funnelEl = document.getElementById('funnel');
+        const maxFunnel = Math.max(pageviews.size, 1);
+        funnelEl.innerHTML = [
+            { label: 'Page Views', count: pageviews.size, pct: 100 },
+            { label: 'Previewed', count: previewed.size, pct: Math.round(previewed.size / maxFunnel * 100) },
+            { label: 'Started Mixing', count: converted.size, pct: Math.round(converted.size / maxFunnel * 100) },
+        ].map(s => `
+            <div class="funnel-step">
+                <div class="funnel-label">${s.label}</div>
+                <div class="funnel-bar"><div class="funnel-fill" style="width:${Math.max(s.pct, 2)}%">${s.count}</div></div>
+                <div class="funnel-pct">${s.pct}%</div>
+            </div>
+        `).join('');
+
+        // Referrers
+        const refCounts = {};
+        events.filter(e => e.event === 'pageview').forEach(e => {
+            let ref = e.referrer || 'direct';
+            try { ref = ref ? new URL(ref).hostname : 'direct'; } catch { ref = ref || 'direct'; }
+            refCounts[ref] = (refCounts[ref] || 0) + 1;
+        });
+        const sortedRefs = Object.entries(refCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+        const maxRef = sortedRefs.length > 0 ? sortedRefs[0][1] : 1;
+        const refEl = document.getElementById('referrers');
+        refEl.innerHTML = sortedRefs.map(([name, count]) => {
+            const isPH = name.includes('producthunt');
+            return `
+                <div class="bar-row">
+                    <div class="bar-label">${name}</div>
+                    <div class="bar-track"><div class="bar-fill ${isPH ? 'ph' : 'green'}" style="width:${Math.round(count/maxRef*100)}%"></div></div>
+                    <div class="bar-count">${count}</div>
+                </div>
+            `;
+        }).join('') || '<div class="loading">no referrer data</div>';
     }
 
     async function loadTopEvents() {
         const events = await fetchEvents({
             'select': 'event,project',
+            'created_at': `gte.${getTimeFilter()}`,
             'order': 'created_at.desc',
             'limit': '500',
         });
@@ -243,6 +417,7 @@
             'select': 'data',
             'event': 'eq.layer_activate',
             'project': 'eq.drift',
+            'created_at': `gte.${getTimeFilter()}`,
             'order': 'created_at.desc',
             'limit': '500',
         });
@@ -262,7 +437,7 @@
 
     async function loadRecentActivity() {
         const events = await fetchEvents({
-            'select': 'project,event,data,created_at',
+            'select': 'project,event,data,created_at,referrer',
             'order': 'created_at.desc',
             'limit': '20',
         });
@@ -276,22 +451,25 @@
             if (e.event === 'layer_activate') detail = e.data?.name || '';
             if (e.event === 'preset_load') detail = `${e.data?.count || '?'} layers`;
             if (e.event === 'mix_share') detail = 'shared a mix';
+            if (e.event === 'landing_conversion') detail = e.data?.previewed ? 'after preview' : 'no preview';
+            const phTag = (e.referrer || '').includes('producthunt') ? ' <span style="color:var(--ph-orange)">[PH]</span>' : '';
 
             return `<li class="activity-item">
                 <span class="activity-time">${timeStr}</span>
                 <span class="activity-project">${e.project}</span>
-                ${e.event}${detail ? ' — ' + detail : ''}
+                ${e.event}${detail ? ' — ' + detail : ''}${phTag}
             </li>`;
         }).join('') || '<li class="loading">no activity yet</li>';
     }
 
     async function loadAll() {
-        await Promise.all([loadCounts(), loadTopEvents(), loadTopLayers(), loadRecentActivity()]);
+        document.getElementById('last-updated').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        await Promise.all([loadCounts(), loadVisitors(), loadTopEvents(), loadTopLayers(), loadRecentActivity()]);
     }
 
     loadAll();
-    // Auto-refresh every 30 seconds
-    setInterval(loadAll, 30000);
+    // Auto-refresh every 15 seconds for launch day
+    setInterval(loadAll, 15000);
     </script>
     <script src="nav.js" defer></script>
 </body>
