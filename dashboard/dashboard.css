@@ -107,8 +107,8 @@ body.phase-break .panel-timer {
 }
 
 @keyframes pickerFadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { transform: translateY(20px); }
+    to { transform: translateY(0); }
 }
 
 .picker-title {
@@ -121,7 +121,7 @@ body.phase-break .panel-timer {
 }
 
 @keyframes breathe {
-    0%, 100% { opacity: 0.7; }
+    0%, 100% { opacity: 0.85; }
     50% { opacity: 1; }
 }
 
