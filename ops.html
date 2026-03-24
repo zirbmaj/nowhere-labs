@@ -171,31 +171,56 @@
     }
 
     async function loadFunnel() {
-        // Drift funnel: landing → app → interaction
-        const today = new Date().toISOString().split('T')[0];
-        const allEvents = await query('analytics_events',
-            `select=event,data&project=eq.drift&created_at=gte.${today}T00:00:00&limit=5000`
-        );
+        // Use server-side RPC for full PH funnel
+        try {
+            const stats = await rpc('get_launch_stats', { time_window: '24h' });
+            const pageviews = stats.pageviews || 0;
+            const previewed = stats.previewed || 0;
+            const converted = stats.converted || 0;
+            const mixed = stats.mixed || 0;
+            const published = stats.published || 0;
+            const max = Math.max(pageviews, 1);
 
-        const landing = allEvents.filter(e => e.event === 'pageview' && e.data?.page === '/').length;
-        const app = allEvents.filter(e => e.event === 'pageview' && (e.data?.page === '/app.html' || e.data?.page === '/app')).length;
-        const interact = allEvents.filter(e => e.event === 'layer_activate').length;
-        const max = Math.max(landing, 1);
+            const steps = [
+                { label: 'pageviews', count: pageviews, pct: 100 },
+                { label: 'previewed', count: previewed, pct: Math.round(previewed / max * 100) },
+                { label: 'converted', count: converted, pct: Math.round(converted / max * 100) },
+                { label: 'mixed', count: mixed, pct: Math.round(mixed / max * 100) },
+                { label: 'published', count: published, pct: Math.round(published / max * 100) },
+            ];
 
-        const steps = [
-            { label: 'landing', count: landing, pct: 100 },
-            { label: 'app', count: app, pct: Math.round(app / max * 100) },
-            { label: 'interaction', count: interact, pct: Math.round(interact / max * 100) },
-        ];
-
-        document.getElementById('funnel').innerHTML = steps.map(s =>
-            `<div class="funnel-step">
-                <span class="funnel-label">${s.label}</span>
-                <div class="funnel-bar">${renderBar(s.pct)}</div>
-                <span class="funnel-count">${s.count}</span>
-                <span class="funnel-pct">${s.pct}%</span>
-            </div>`
-        ).join('');
+            document.getElementById('funnel').innerHTML = steps.map(s =>
+                `<div class="funnel-step">
+                    <span class="funnel-label">${s.label}</span>
+                    <div class="funnel-bar">${renderBar(s.pct)}</div>
+                    <span class="funnel-count">${s.count}</span>
+                    <span class="funnel-pct">${s.pct}%</span>
+                </div>`
+            ).join('');
+        } catch(e) {
+            // Fallback to client-side if RPC fails
+            const today = new Date().toISOString().split('T')[0];
+            const allEvents = await query('analytics_events',
+                `select=event,data&project=eq.drift&created_at=gte.${today}T00:00:00&limit=5000`
+            );
+            const landing = allEvents.filter(e => e.event === 'pageview' && e.data?.page === '/').length;
+            const app = allEvents.filter(e => e.event === 'pageview' && (e.data?.page === '/app.html' || e.data?.page === '/app')).length;
+            const interact = allEvents.filter(e => e.event === 'layer_activate').length;
+            const max = Math.max(landing, 1);
+            const steps = [
+                { label: 'landing', count: landing, pct: 100 },
+                { label: 'app', count: app, pct: Math.round(app / max * 100) },
+                { label: 'interaction', count: interact, pct: Math.round(interact / max * 100) },
+            ];
+            document.getElementById('funnel').innerHTML = steps.map(s =>
+                `<div class="funnel-step">
+                    <span class="funnel-label">${s.label}</span>
+                    <div class="funnel-bar">${renderBar(s.pct)}</div>
+                    <span class="funnel-count">${s.count}</span>
+                    <span class="funnel-pct">${s.pct}%</span>
+                </div>`
+            ).join('');
+        }
     }
 
     async function loadUniqueVisitors() {
