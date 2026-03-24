@@ -69,13 +69,13 @@
         }
         .nwl-nav-left a, .nwl-nav-right a {
             font-size: 9px;
-            color: rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.55);
             text-decoration: none;
             letter-spacing: 2px;
             transition: color 0.2s;
         }
-        .nwl-nav-left a:hover, .nwl-nav-right a:hover { color: rgba(255,255,255,0.5); }
-        .nwl-nav-active { color: rgba(255,255,255,0.4) !important; }
+        .nwl-nav-left a:hover, .nwl-nav-right a:hover { color: rgba(255,255,255,0.7); }
+        .nwl-nav-active { color: rgba(255,255,255,0.65) !important; }
         .nwl-nav-right { display: flex; gap: 16px; }
         @media (max-width: 480px) {
             #nwl-nav { flex-direction: column; gap: 6px; text-align: center; }
