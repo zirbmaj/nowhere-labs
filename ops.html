@@ -367,12 +367,12 @@
 
     async function loadPHUpvotes() {
         try {
-            const rows = await query('ph_upvotes', 'select=upvotes,comments,polled_at&order=polled_at.desc&limit=1');
+            const rows = await query('ph_upvotes', 'select=upvotes,comments,recorded_at&order=recorded_at.desc&limit=1');
             if (rows.length > 0) {
                 const latest = rows[0];
                 document.getElementById('ph-card').style.display = '';
                 document.getElementById('ph-upvotes').textContent = latest.upvotes.toLocaleString();
-                document.getElementById('ph-upvotes-sub').textContent = `${latest.comments} comments · ${timeAgo(latest.polled_at)}`;
+                document.getElementById('ph-upvotes-sub').textContent = `${latest.comments} comments · ${timeAgo(latest.recorded_at)}`;
             }
         } catch(e) {
             // Table doesn't exist yet or no data — hide card silently
