@@ -196,16 +196,15 @@
             `<div class="status-row"><span class="product-name" style="width:160px">${u.source}</span><div style="flex:1">${renderBar(u.events / utmMax * 100)}</div><span class="response-time" style="width:40px;text-align:right">${u.events}</span></div>`
         ).join('') : '<div class="card-sub">no UTM data yet — will populate on PH launch day</div>';
 
-        // Hourly pattern (server returns UTC hours, convert to CST)
+        // Hourly pattern (server returns UTC hours, convert to local/CST)
         const hourlyData = stats.by_hour || [];
         const hours = new Array(24).fill(0);
         hourlyData.forEach(h => {
             const d = new Date(h.hour);
-            const cst = new Date(d.getTime() - 6 * 3600000);
-            hours[cst.getUTCHours()] += h.events;
+            hours[d.getHours()] += h.events;
         });
         const hourMax = Math.max(...hours, 1);
-        const now = new Date(Date.now() - 6 * 3600000).getUTCHours();
+        const now = new Date().getHours();
         document.getElementById('hourly').innerHTML = hours.map((count, h) => {
             const label = h === 0 ? '12a' : h < 12 ? h + 'a' : h === 12 ? '12p' : (h - 12) + 'p';
             const isNow = h === now;
