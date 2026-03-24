@@ -284,83 +284,59 @@
         return res.json();
     }
 
-    async function fetchCount(filter) {
-        const url = new URL(`${SB_URL}/rest/v1/analytics_events`);
-        url.searchParams.set('select', 'id');
-        url.searchParams.set('created_at', `gte.${getTimeFilter()}`);
-        if (filter) url.searchParams.set('project', `eq.${filter}`);
-        const res = await fetch(url, {
+    async function callRpc(name, params) {
+        const res = await fetch(`${SB_URL}/rest/v1/rpc/${name}`, {
+            method: 'POST',
             headers: {
                 'apikey': SB_KEY,
                 'Authorization': `Bearer ${SB_KEY}`,
-                'Prefer': 'count=exact',
-                'Range': '0-0',
+                'Content-Type': 'application/json',
             },
+            body: JSON.stringify(params),
         });
-        const range = res.headers.get('content-range');
-        return range ? parseInt(range.split('/')[1]) || 0 : 0;
+        return res.json();
     }
 
-    async function loadCounts() {
-        const [total, drift, staticfm, pulse, letters] = await Promise.all([
-            fetchCount(),
-            fetchCount('drift'),
-            fetchCount('static-fm'),
-            fetchCount('pulse'),
-            fetchCount('letters'),
-        ]);
+    async function loadStats() {
+        const since = getTimeFilter();
+        const stats = await callRpc('get_launch_stats', { since });
 
-        document.getElementById('total-events').textContent = total.toLocaleString();
-        document.getElementById('drift-count').textContent = drift.toLocaleString();
-        document.getElementById('staticfm-count').textContent = staticfm.toLocaleString();
-        document.getElementById('pulse-count').textContent = pulse.toLocaleString();
-        document.getElementById('letters-count').textContent = letters.toLocaleString();
+        // Top-line numbers
+        document.getElementById('total-events').textContent = (stats.total_events || 0).toLocaleString();
+        document.getElementById('unique-visitors').textContent = (stats.unique_visitors || 0).toLocaleString();
+        document.getElementById('ph-referrals').textContent = (stats.ph_visitors || 0).toLocaleString();
 
-        // Velocity: events per minute in current window
-        const windowMs = timeWindow === '15min' ? 15*60*1000 : timeWindow === 'hour' ? 60*60*1000 : Date.now() - new Date(getTimeFilter()).getTime();
-        const epm = windowMs > 0 ? (total / (windowMs / 60000)).toFixed(1) : 0;
+        // Velocity
+        const windowMs = timeWindow === '15min' ? 15*60*1000 : timeWindow === 'hour' ? 60*60*1000 : Date.now() - new Date(since).getTime();
+        const epm = windowMs > 0 ? (stats.total_events / (windowMs / 60000)).toFixed(1) : 0;
+        const vph = windowMs > 0 ? Math.round(stats.unique_visitors / (windowMs / 3600000)) : 0;
         document.getElementById('event-velocity').textContent = `${epm} events/min`;
-    }
-
-    async function loadVisitors() {
-        // Fetch recent events with user_id to count unique visitors
-        const events = await fetchEvents({
-            'select': 'user_id,referrer,event,data',
-            'created_at': `gte.${getTimeFilter()}`,
-            'order': 'created_at.desc',
-            'limit': '2000',
-        });
-
-        // Unique visitors
-        const visitors = new Set(events.map(e => e.user_id).filter(Boolean));
-        document.getElementById('unique-visitors').textContent = visitors.size.toLocaleString();
-
-        const windowMs = timeWindow === '15min' ? 15*60*1000 : timeWindow === 'hour' ? 60*60*1000 : Date.now() - new Date(getTimeFilter()).getTime();
-        const vph = windowMs > 0 ? Math.round(visitors.size / (windowMs / 3600000)) : 0;
         document.getElementById('visitor-velocity').textContent = `~${vph}/hr`;
 
-        // PH referrals
-        const phVisitors = new Set(events.filter(e => (e.referrer || '').includes('producthunt')).map(e => e.user_id).filter(Boolean));
-        document.getElementById('ph-referrals').textContent = phVisitors.size.toLocaleString();
-        document.getElementById('ph-pct').textContent = visitors.size > 0 ? `${Math.round(phVisitors.size / visitors.size * 100)}% of traffic` : '';
+        // PH percentage
+        document.getElementById('ph-pct').textContent = stats.unique_visitors > 0
+            ? `${Math.round(stats.ph_visitors / stats.unique_visitors * 100)}% of traffic` : '';
 
-        // Funnel: pageviews → preview_click → cta_click/quickstart_click
-        const pageviews = new Set(events.filter(e => e.event === 'pageview').map(e => e.user_id).filter(Boolean));
-        const previewed = new Set(events.filter(e => e.event === 'preview_click').map(e => e.user_id).filter(Boolean));
-        const converted = new Set(events.filter(e => e.event === 'cta_click' || e.event === 'quickstart_click' || e.event === 'landing_conversion').map(e => e.user_id).filter(Boolean));
-
-        const convRate = pageviews.size > 0 ? Math.round(converted.size / pageviews.size * 100) : 0;
+        // Conversion
+        const convRate = stats.pageviews > 0 ? Math.round(stats.converted / stats.pageviews * 100) : 0;
+        const prevRate = stats.pageviews > 0 ? Math.round(stats.previewed / stats.pageviews * 100) : 0;
         document.getElementById('conversion-rate').textContent = `${convRate}%`;
-        const prevRate = pageviews.size > 0 ? Math.round(previewed.size / pageviews.size * 100) : 0;
         document.getElementById('preview-rate').textContent = `${prevRate}% previewed`;
 
-        // Render funnel
+        // Product breakdown
+        const bp = stats.by_project || {};
+        document.getElementById('drift-count').textContent = (bp.drift || 0).toLocaleString();
+        document.getElementById('staticfm-count').textContent = (bp['static-fm'] || 0).toLocaleString();
+        document.getElementById('pulse-count').textContent = (bp.pulse || 0).toLocaleString();
+        document.getElementById('letters-count').textContent = (bp.letters || 0).toLocaleString();
+
+        // Funnel
         const funnelEl = document.getElementById('funnel');
-        const maxFunnel = Math.max(pageviews.size, 1);
+        const maxFunnel = Math.max(stats.pageviews, 1);
         funnelEl.innerHTML = [
-            { label: 'Page Views', count: pageviews.size, pct: 100 },
-            { label: 'Previewed', count: previewed.size, pct: Math.round(previewed.size / maxFunnel * 100) },
-            { label: 'Started Mixing', count: converted.size, pct: Math.round(converted.size / maxFunnel * 100) },
+            { label: 'Page Views', count: stats.pageviews || 0, pct: 100 },
+            { label: 'Previewed', count: stats.previewed || 0, pct: Math.round((stats.previewed || 0) / maxFunnel * 100) },
+            { label: 'Started Mixing', count: stats.converted || 0, pct: Math.round((stats.converted || 0) / maxFunnel * 100) },
         ].map(s => `
             <div class="funnel-step">
                 <div class="funnel-label">${s.label}</div>
@@ -370,25 +346,26 @@
         `).join('');
 
         // Referrers
-        const refCounts = {};
-        events.filter(e => e.event === 'pageview').forEach(e => {
-            let ref = e.referrer || 'direct';
-            try { ref = ref ? new URL(ref).hostname : 'direct'; } catch { ref = ref || 'direct'; }
-            refCounts[ref] = (refCounts[ref] || 0) + 1;
-        });
-        const sortedRefs = Object.entries(refCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
-        const maxRef = sortedRefs.length > 0 ? sortedRefs[0][1] : 1;
+        const refs = stats.top_referrers || [];
+        const maxRef = refs.length > 0 ? refs[0].count : 1;
         const refEl = document.getElementById('referrers');
-        refEl.innerHTML = sortedRefs.map(([name, count]) => {
-            const isPH = name.includes('producthunt');
+        refEl.innerHTML = refs.map(r => {
+            const isPH = (r.source || '').includes('producthunt');
             return `
                 <div class="bar-row">
-                    <div class="bar-label">${name}</div>
-                    <div class="bar-track"><div class="bar-fill ${isPH ? 'ph' : 'green'}" style="width:${Math.round(count/maxRef*100)}%"></div></div>
-                    <div class="bar-count">${count}</div>
+                    <div class="bar-label">${r.source}</div>
+                    <div class="bar-track"><div class="bar-fill ${isPH ? 'ph' : 'green'}" style="width:${Math.round(r.count/maxRef*100)}%"></div></div>
+                    <div class="bar-count">${r.count}</div>
                 </div>
             `;
         }).join('') || '<div class="loading">no referrer data</div>';
+
+        // Top layers (from RPC)
+        const layers = stats.top_layers || [];
+        const tbody = document.getElementById('top-layers');
+        tbody.innerHTML = layers.map(l =>
+            `<tr><td>${l.layer}</td><td>${l.count}</td></tr>`
+        ).join('') || '<tr><td colspan="2" class="loading">no layer data yet</td></tr>';
     }
 
     async function loadTopEvents() {
@@ -412,28 +389,7 @@
         ).join('') || '<tr><td colspan="2" class="loading">no data yet</td></tr>';
     }
 
-    async function loadTopLayers() {
-        const events = await fetchEvents({
-            'select': 'data',
-            'event': 'eq.layer_activate',
-            'project': 'eq.drift',
-            'created_at': `gte.${getTimeFilter()}`,
-            'order': 'created_at.desc',
-            'limit': '500',
-        });
-
-        const counts = {};
-        events.forEach(e => {
-            const layer = e.data?.name || e.data?.layer || 'unknown';
-            counts[layer] = (counts[layer] || 0) + 1;
-        });
-
-        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
-        const tbody = document.getElementById('top-layers');
-        tbody.innerHTML = sorted.map(([name, count]) =>
-            `<tr><td>${name}</td><td>${count}</td></tr>`
-        ).join('') || '<tr><td colspan="2" class="loading">no layer data yet</td></tr>';
-    }
+    // Top layers now handled by loadStats via RPC
 
     async function loadRecentActivity() {
         const events = await fetchEvents({
@@ -464,7 +420,7 @@
 
     async function loadAll() {
         document.getElementById('last-updated').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        await Promise.all([loadCounts(), loadVisitors(), loadTopEvents(), loadTopLayers(), loadRecentActivity()]);
+        await Promise.all([loadStats(), loadTopEvents(), loadRecentActivity()]);
     }
 
     loadAll();
