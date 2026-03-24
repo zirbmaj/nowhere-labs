@@ -74,6 +74,11 @@
             <div class="card-value" id="events-per-min">...</div>
             <div class="card-sub">rolling 5 min average</div>
         </div>
+        <div class="card" id="ph-card" style="display:none">
+            <div class="card-title">PH UPVOTES</div>
+            <div class="card-value" id="ph-upvotes">—</div>
+            <div class="card-sub" id="ph-upvotes-sub">waiting for launch</div>
+        </div>
     </div>
 
     <!-- Row 2: Uptime + Funnel -->
@@ -359,6 +364,20 @@
         }).join('');
     }
 
+    async function loadPHUpvotes() {
+        try {
+            const rows = await query('ph_upvotes', 'select=upvotes,comments,polled_at&order=polled_at.desc&limit=1');
+            if (rows.length > 0) {
+                const latest = rows[0];
+                document.getElementById('ph-card').style.display = '';
+                document.getElementById('ph-upvotes').textContent = latest.upvotes.toLocaleString();
+                document.getElementById('ph-upvotes-sub').textContent = `${latest.comments} comments · ${timeAgo(latest.polled_at)}`;
+            }
+        } catch(e) {
+            // Table doesn't exist yet or no data — hide card silently
+        }
+    }
+
     async function loadAll() {
         await Promise.allSettled([
             loadHeartbeat(),
@@ -373,6 +392,7 @@
             loadByProduct(),
             loadTopLayers(),
             loadLiveFeed(),
+            loadPHUpvotes(),
         ]);
         document.getElementById('refresh').textContent = `last updated: ${new Date().toLocaleTimeString()} · refreshes every 30s`;
     }
