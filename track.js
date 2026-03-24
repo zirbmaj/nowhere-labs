@@ -12,6 +12,11 @@
     const ua = navigator.userAgent || '';
     if (/bot|crawl|spider|headless|screenshot|vercel|prerender|lighthouse/i.test(ua)) return;
 
+    // Skip non-production environments (local dev, preview branches)
+    const host = window.location.hostname || '';
+    if (!host || host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:') return;
+    if (host.includes('vercel.app') && !host.includes('nowherelabs')) return;
+
     // Persistent user ID (retention tracking)
     let userId = localStorage.getItem('nwl_uid');
     if (!userId) {
