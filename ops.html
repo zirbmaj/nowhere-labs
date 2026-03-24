@@ -157,6 +157,18 @@
         return `<div class="bar-container"><div class="bar" style="width:${Math.min(pct, 100)}%"></div></div>`;
     }
 
+    function renderFunnelSteps(steps) {
+        return steps.map(s =>
+            `<div class="funnel-step">
+                <span class="funnel-label">${s.label}</span>
+                <div class="funnel-bar">${renderBar(s.pct)}</div>
+                <span class="funnel-count">${s.count}</span>
+                <span class="funnel-pct">${s.pct}%</span>
+            </div>`
+        ).join('');
+    }
+
+    // Heartbeat: separate table, small payload — keep as direct query
     async function loadHeartbeat() {
         const hb = await query('heartbeat', 'select=id,status,response_ms,last_checked&order=id');
         document.getElementById('heartbeat').innerHTML = hb.map(p =>
@@ -164,80 +176,84 @@
         ).join('');
     }
 
-    async function loadEventsToday() {
-        // Get today's events using the analytics_events table
-        const today = new Date().toISOString().split('T')[0];
-        const events = await query('analytics_events', `select=id&created_at=gte.${today}T00:00:00&limit=1&order=id.desc`, true);
+    // Primary data source: one RPC call replaces 6 client-side queries
+    // Returns: total_events, unique_users, sessions, by_project, by_event,
+    //          by_hour, utm_sources, funnel — all bot-filtered server-side
+    async function loadDayStats() {
+        const stats = await rpc('get_launch_day_stats', { since_hours: 24 });
 
-        // Use RPC for total count
-        const total = await rpc('get_event_count');
-        document.getElementById('events-today').textContent = total.toLocaleString();
-        document.getElementById('events-today-sub').textContent = 'all time, bot-filtered';
+        // Events today
+        document.getElementById('events-today').textContent = (stats.total_events || 0).toLocaleString();
+        document.getElementById('events-today-sub').textContent = 'last 24h, bot-filtered';
+
+        // Unique visitors
+        document.getElementById('unique-visitors').textContent = (stats.unique_users || 0).toLocaleString();
+
+        // UTM sources
+        const utmData = stats.utm_sources || [];
+        const utmMax = utmData[0]?.events || 1;
+        document.getElementById('utm-sources').innerHTML = utmData.length ? utmData.map(u =>
+            `<div class="status-row"><span class="product-name" style="width:160px">${u.source}</span><div style="flex:1">${renderBar(u.events / utmMax * 100)}</div><span class="response-time" style="width:40px;text-align:right">${u.events}</span></div>`
+        ).join('') : '<div class="card-sub">no UTM data yet — will populate on PH launch day</div>';
+
+        // Hourly pattern (server returns UTC hours, convert to CST)
+        const hourlyData = stats.by_hour || [];
+        const hours = new Array(24).fill(0);
+        hourlyData.forEach(h => {
+            const d = new Date(h.hour);
+            const cst = new Date(d.getTime() - 6 * 3600000);
+            hours[cst.getUTCHours()] += h.events;
+        });
+        const hourMax = Math.max(...hours, 1);
+        const now = new Date(Date.now() - 6 * 3600000).getUTCHours();
+        document.getElementById('hourly').innerHTML = hours.map((count, h) => {
+            const label = h === 0 ? '12a' : h < 12 ? h + 'a' : h === 12 ? '12p' : (h - 12) + 'p';
+            const isNow = h === now;
+            return `<div class="hour-row">
+                <span class="hour-label" style="${isNow ? 'color:var(--accent)' : ''}">${label}</span>
+                <div class="hour-bar">${renderBar(count / hourMax * 100)}</div>
+                <span class="hour-count" style="${isNow ? 'color:var(--accent)' : ''}">${count}</span>
+            </div>`;
+        }).join('');
+
+        // Events by product
+        const byProduct = stats.by_project || [];
+        const prodMax = byProduct[0]?.events || 1;
+        document.getElementById('by-product').innerHTML = byProduct.length ? byProduct.map(p =>
+            `<div class="status-row"><span class="product-name">${p.project}</span><div style="flex:1">${renderBar(p.events / prodMax * 100)}</div><span class="response-time" style="width:50px;text-align:right">${p.events}</span></div>`
+        ).join('') : '<div class="card-sub">no events today</div>';
+
+        // Funnel from the same RPC
+        const funnel = stats.funnel || {};
+        const funnelMax = Math.max(funnel.pageviews || 0, 1);
+        const funnelSteps = [
+            { label: 'pageviews', count: funnel.pageviews || 0, pct: 100 },
+            { label: 'cta clicks', count: funnel.cta_clicks || 0, pct: Math.round((funnel.cta_clicks || 0) / funnelMax * 100) },
+            { label: 'mixing', count: funnel.layer_activations || 0, pct: Math.round((funnel.layer_activations || 0) / funnelMax * 100) },
+            { label: 'saved', count: funnel.mixes_saved || 0, pct: Math.round((funnel.mixes_saved || 0) / funnelMax * 100) },
+            { label: 'shared', count: funnel.mixes_shared || 0, pct: Math.round((funnel.mixes_shared || 0) / funnelMax * 100) },
+        ];
+        document.getElementById('funnel').innerHTML = renderFunnelSteps(funnelSteps);
     }
 
-    async function loadFunnel() {
-        // Use server-side RPC for full PH funnel
+    // Referrers + PH funnel: use get_launch_stats for user-based funnel
+    async function loadLaunchStats() {
         try {
             const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
             const stats = await rpc('get_launch_stats', { since });
-            const pageviews = stats.pageviews || 0;
-            const previewed = stats.previewed || 0;
-            const converted = stats.converted || 0;
-            const mixed = stats.mixed || 0;
-            const published = stats.published || 0;
-            const max = Math.max(pageviews, 1);
 
-            const steps = [
-                { label: 'pageviews', count: pageviews, pct: 100 },
-                { label: 'previewed', count: previewed, pct: Math.round(previewed / max * 100) },
-                { label: 'converted', count: converted, pct: Math.round(converted / max * 100) },
-                { label: 'mixed', count: mixed, pct: Math.round(mixed / max * 100) },
-                { label: 'published', count: published, pct: Math.round(published / max * 100) },
-            ];
-
-            document.getElementById('funnel').innerHTML = steps.map(s =>
-                `<div class="funnel-step">
-                    <span class="funnel-label">${s.label}</span>
-                    <div class="funnel-bar">${renderBar(s.pct)}</div>
-                    <span class="funnel-count">${s.count}</span>
-                    <span class="funnel-pct">${s.pct}%</span>
-                </div>`
-            ).join('');
+            // Referrers (server-side aggregated)
+            const refs = stats.top_referrers || [];
+            const refMax = refs[0]?.count || 1;
+            document.getElementById('referrers').innerHTML = refs.length ? refs.map(r =>
+                `<div class="status-row"><span class="product-name">${r.source}</span><div style="flex:1">${renderBar(r.count / refMax * 100)}</div><span class="response-time" style="width:40px;text-align:right">${r.count}</span></div>`
+            ).join('') : '<div class="card-sub">no referrer data yet</div>';
         } catch(e) {
-            // Fallback to client-side if RPC fails
-            const today = new Date().toISOString().split('T')[0];
-            const allEvents = await query('analytics_events',
-                `select=event,data&project=eq.drift&created_at=gte.${today}T00:00:00&limit=5000`
-            );
-            const landing = allEvents.filter(e => e.event === 'pageview' && e.data?.page === '/').length;
-            const app = allEvents.filter(e => e.event === 'pageview' && (e.data?.page === '/app.html' || e.data?.page === '/app')).length;
-            const interact = allEvents.filter(e => e.event === 'layer_activate').length;
-            const max = Math.max(landing, 1);
-            const steps = [
-                { label: 'landing', count: landing, pct: 100 },
-                { label: 'app', count: app, pct: Math.round(app / max * 100) },
-                { label: 'interaction', count: interact, pct: Math.round(interact / max * 100) },
-            ];
-            document.getElementById('funnel').innerHTML = steps.map(s =>
-                `<div class="funnel-step">
-                    <span class="funnel-label">${s.label}</span>
-                    <div class="funnel-bar">${renderBar(s.pct)}</div>
-                    <span class="funnel-count">${s.count}</span>
-                    <span class="funnel-pct">${s.pct}%</span>
-                </div>`
-            ).join('');
+            document.getElementById('referrers').innerHTML = '<div class="card-sub">referrer data unavailable</div>';
         }
     }
 
-    async function loadUniqueVisitors() {
-        const today = new Date().toISOString().split('T')[0];
-        const events = await query('analytics_events',
-            `select=user_id&created_at=gte.${today}T00:00:00&user_id=not.is.null&limit=10000`
-        );
-        const unique = new Set(events.map(e => e.user_id)).size;
-        document.getElementById('unique-visitors').textContent = unique.toLocaleString();
-    }
-
+    // Real-time metrics: short time windows, low row counts — keep as direct queries
     async function loadActiveSessions() {
         const fifteenAgo = new Date(Date.now() - 15 * 60000).toISOString();
         const events = await query('analytics_events',
@@ -254,93 +270,6 @@
         );
         const rate = (events.length / 5).toFixed(1);
         document.getElementById('events-per-min').textContent = rate;
-    }
-
-    async function loadReferrers() {
-        const today = new Date().toISOString().split('T')[0];
-        const events = await query('analytics_events',
-            `select=referrer&created_at=gte.${today}T00:00:00&referrer=not.is.null&referrer=neq.&limit=10000`
-        );
-        const counts = {};
-        events.forEach(e => {
-            if (!e.referrer) return;
-            try {
-                const host = new URL(e.referrer).hostname.replace('www.', '');
-                counts[host] = (counts[host] || 0) + 1;
-            } catch {
-                counts[e.referrer] = (counts[e.referrer] || 0) + 1;
-            }
-        });
-        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
-        const max = sorted[0]?.[1] || 1;
-
-        document.getElementById('referrers').innerHTML = sorted.length ? sorted.map(([host, count]) =>
-            `<div class="status-row"><span class="product-name">${host}</span><div style="flex:1">${renderBar(count / max * 100)}</div><span class="response-time" style="width:40px;text-align:right">${count}</span></div>`
-        ).join('') : '<div class="card-sub">no referrer data yet</div>';
-    }
-
-    async function loadUTM() {
-        const today = new Date().toISOString().split('T')[0];
-        const events = await query('analytics_events',
-            `select=data&created_at=gte.${today}T00:00:00&limit=10000`
-        );
-        const counts = {};
-        events.forEach(e => {
-            const src = e.data?.utm_source;
-            if (!src) return;
-            const key = `${src} / ${e.data?.utm_medium || 'direct'}`;
-            counts[key] = (counts[key] || 0) + 1;
-        });
-        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
-        const max = sorted[0]?.[1] || 1;
-
-        document.getElementById('utm-sources').innerHTML = sorted.length ? sorted.map(([src, count]) =>
-            `<div class="status-row"><span class="product-name" style="width:160px">${src}</span><div style="flex:1">${renderBar(count / max * 100)}</div><span class="response-time" style="width:40px;text-align:right">${count}</span></div>`
-        ).join('') : '<div class="card-sub">no UTM data yet — will populate on PH launch day</div>';
-    }
-
-    async function loadHourly() {
-        const today = new Date().toISOString().split('T')[0];
-        const events = await query('analytics_events',
-            `select=created_at&created_at=gte.${today}T00:00:00&limit=50000`
-        );
-        const hours = new Array(24).fill(0);
-        events.forEach(e => {
-            // Convert to CST (UTC-6)
-            const d = new Date(e.created_at);
-            const cst = new Date(d.getTime() - 6 * 3600000);
-            hours[cst.getUTCHours()]++;
-        });
-        const max = Math.max(...hours, 1);
-        const now = new Date(Date.now() - 6 * 3600000).getUTCHours();
-
-        document.getElementById('hourly').innerHTML = hours.map((count, h) => {
-            const label = h === 0 ? '12a' : h < 12 ? h + 'a' : h === 12 ? '12p' : (h - 12) + 'p';
-            const isNow = h === now;
-            return `<div class="hour-row">
-                <span class="hour-label" style="${isNow ? 'color:var(--accent)' : ''}">${label}</span>
-                <div class="hour-bar">${renderBar(count / max * 100)}</div>
-                <span class="hour-count" style="${isNow ? 'color:var(--accent)' : ''}">${count}</span>
-            </div>`;
-        }).join('');
-    }
-
-    async function loadByProduct() {
-        const today = new Date().toISOString().split('T')[0];
-        const events = await query('analytics_events',
-            `select=project&created_at=gte.${today}T00:00:00&limit=50000`
-        );
-        const counts = {};
-        events.forEach(e => {
-            const p = e.project || 'unknown';
-            counts[p] = (counts[p] || 0) + 1;
-        });
-        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-        const max = sorted[0]?.[1] || 1;
-
-        document.getElementById('by-product').innerHTML = sorted.length ? sorted.map(([product, count]) =>
-            `<div class="status-row"><span class="product-name">${product}</span><div style="flex:1">${renderBar(count / max * 100)}</div><span class="response-time" style="width:50px;text-align:right">${count}</span></div>`
-        ).join('') : '<div class="card-sub">no events today</div>';
     }
 
     async function loadTopLayers() {
@@ -381,19 +310,14 @@
 
     async function loadAll() {
         await Promise.allSettled([
-            loadHeartbeat(),
-            loadEventsToday(),
-            loadFunnel(),
-            loadUniqueVisitors(),
-            loadActiveSessions(),
-            loadEventsPerMin(),
-            loadReferrers(),
-            loadUTM(),
-            loadHourly(),
-            loadByProduct(),
-            loadTopLayers(),
-            loadLiveFeed(),
-            loadPHUpvotes(),
+            loadDayStats(),        // 1 RPC → events, visitors, UTM, hourly, products, funnel
+            loadLaunchStats(),     // 1 RPC → referrers
+            loadHeartbeat(),       // 1 query (heartbeat table, ~10 rows)
+            loadActiveSessions(),  // 1 query (15min window, low rows)
+            loadEventsPerMin(),    // 1 query (5min window, low rows)
+            loadTopLayers(),       // 1 RPC (get_trending_layers)
+            loadLiveFeed(),        // 1 query (20 rows)
+            loadPHUpvotes(),       // 1 query (1 row)
         ]);
         document.getElementById('refresh').textContent = `last updated: ${new Date().toLocaleTimeString()} · refreshes every 30s`;
     }
