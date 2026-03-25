@@ -12,6 +12,10 @@
     const ua = navigator.userAgent || '';
     if (/bot|crawl|spider|headless|screenshot|vercel|prerender|lighthouse/i.test(ua)) return;
 
+    // Skip dev/local environments
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1' || window.location.protocol === 'file:') return;
+
     // Persistent user ID (retention tracking)
     let userId = localStorage.getItem('nwl_uid');
     if (!userId) {
